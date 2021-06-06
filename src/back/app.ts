@@ -4,9 +4,11 @@ import {Server as ServerIO, Socket} from "socket.io";
 import cookieParser from "cookie-parser";
 import {Server} from "http";
 import {AppConstants} from "./app.constants";
-import {SharedEmitConstants} from "../shared/shared.emit.constants";
+import {EmitConstants} from "../shared/emit.constants";
 import {AppUtils} from "./app.utils";
 import {Game} from "./game";
+import {Room} from "../shared/models/room.model";
+import {RoomInfo} from "../shared/models/room.info.model";
 
 const PORT = process.env.PORT || 3000;
 const INDEX = './front/index.html';
@@ -57,8 +59,13 @@ class App {
 
 
     private registerBroadcastsIntervals() {
+        let roomCount = this.game.getRoomInfos().length;
         setInterval(() => {
-            this.io.sockets.emit(SharedEmitConstants.MESSAGE, "everyone");
+            const rooms = this.game.getRoomInfos();
+            if (roomCount !== rooms.length) {
+                roomCount = rooms.length;
+                this.io.sockets.emit(EmitConstants.LIST_ROOM_INFOS, rooms);
+            }
         }, 1000);
     }
 
@@ -66,10 +73,10 @@ class App {
         if (!request.cookies) {
             console.log("parseCookies was not used");
         } else {
-            if (request.cookies?.hasOwnProperty(AppConstants.COOKIE_USER_ID)) {
+            if (request.cookies.hasOwnProperty && request.cookies.hasOwnProperty(AppConstants.COOKIE_USER_ID)) {
                 console.log("User refreshed page with cookie " + request.cookies[AppConstants.COOKIE_USER_ID]);
             } else {
-                const userId = AppUtils.getRandomConnectionId();
+                const userId = AppUtils.getRandomUserId();
                 console.log("Set cookie: ", AppConstants.COOKIE_USER_ID, "to", userId)
                 res.cookie(AppConstants.COOKIE_USER_ID, userId, {maxAge: 360000});
             }
@@ -80,7 +87,7 @@ class App {
     private onSocketConnectionEventHandler(socket: Socket) {
         const userId = AppUtils.getCookieFromSocket(socket, AppConstants.COOKIE_USER_ID);
         if (userId == null) {
-            socket.emit(SharedEmitConstants.ERROR, "Missing user id");
+            socket.emit(EmitConstants.ERROR, "Missing user id");
             socket.disconnect();
             return;
         }
@@ -101,8 +108,19 @@ class App {
             this.game.removeUser(userId);
             console.log('Got disconnected!');
         });
-        socket.on(SharedEmitConstants.RESPONSE, (response: string) => {
+        socket.on(EmitConstants.RESPONSE, (response: string) => {
             console.log(response);
+        });
+        socket.on(EmitConstants.CREATE_ROOM, (roomInfo: RoomInfo) => {
+            const room: Room = {
+                id: AppUtils.getRandomRoomId(),
+                users: this.game.getUsersById(userId),
+                ...roomInfo
+            };
+            this.game.addRoom(room);
+        });
+        socket.on(EmitConstants.LIST_ROOM_INFOS, () => {
+            this.io.sockets.emit(EmitConstants.LIST_ROOM_INFOS, this.game.getRoomInfos());
         });
     }
 

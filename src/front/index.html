@@ -1,9 +1,38 @@
 <html>
 <head>
     <script src="bundle.js"></script>
+    <style>
+        table {
+            font-family: arial, sans-serif;
+            border-collapse: collapse;
+            width: 100%;
+        }
+
+        td, th {
+            border: 1px solid #dddddd;
+            text-align: left;
+            padding: 8px;
+        }
+
+        tr:nth-child(even) {
+            background-color: #dddddd;
+        }
+    </style>
 </head>
 <body>
 <h1>Status: <span id="connection-status"></span></h1>
-<button type="submit" id="say-hello">Say Hello</button>
+<button type="submit" id="create-room-button">Create Room</button>
+<button type="submit" id="list-rooms-button">Refresh Rooms</button>
+<br>
+<table id="list-rooms-table">
+    <thead>
+    <tr>
+        <th>Name</th>
+        <th>Number of Players</th>
+    </tr>
+    </thead>
+    <tbody>
+    </tbody>
+</table>
 </body>
 </html>
