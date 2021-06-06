@@ -4,7 +4,6 @@ import {Express} from "express";
 import path from "path";
 import {Socket, Server as ServerIO} from "socket.io";
 import cookieParser from "cookie-parser";
-import cookie from "cookie";
 import {Server} from "http";
 
 const PORT = process.env.PORT || 3000;
@@ -42,8 +41,10 @@ class App {
         this.app.get("/", this.onPageLoadEventHandler);
         this.app.use(express.static(path.join(__dirname, 'front')));
         this.io.on("connection", (socket: Socket) => {
-            console.log("socket cookie", socket.handshake.headers.cookie);
-            console.log("Socket connected!");
+            const cookieData = DataUtils.getCookieFromSocket(socket, COOKIE_USER_ID);
+            if (socket.handshake.headers.cookie != null) {
+                console.log("Socket connected with cookie", cookieData);
+            }
             socket.on("disconnect", () => {
                 console.log('Got disconnected!');
             })
