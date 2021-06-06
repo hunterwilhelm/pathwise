@@ -15,5 +15,8 @@ module.exports = {
   output: {
     filename: "bundle.js",
     path: path.resolve(__dirname, 'build/front')
+  },
+  resolve: {
+    extensions: ['.ts', '.js', '.json']
   }
 }
