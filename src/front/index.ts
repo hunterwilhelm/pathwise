@@ -1,5 +1,5 @@
 import {io, Socket} from "socket.io-client";
-import {EmitConstants} from "../shared/emit.constants";
+import {SharedEmitConstants} from "../shared/shared.emit.constants";
 import {DomUtils} from "./dom.utils";
 import {RoomInfo} from "../shared/models/room.info.model";
 
@@ -19,10 +19,10 @@ class Client {
     setupDOM() {
         document.querySelector('#create-room-button')?.addEventListener('click', () => {
             const room: RoomInfo = {name: "test server" + Math.random()};
-            this.socket.emit(EmitConstants.CREATE_ROOM, room);
+            this.socket.emit(SharedEmitConstants.CREATE_ROOM, room);
         });
         document.querySelector('#list-rooms-button')?.addEventListener('click', () => {
-            this.socket.emit(EmitConstants.LIST_ROOM_INFOS);
+            this.socket.emit(SharedEmitConstants.LIST_ROOM_INFOS);
         });
         DomUtils.displayStatus("Connecting...");
     }
@@ -37,14 +37,14 @@ class Client {
             console.log("disconnect", message);
             DomUtils.displayStatus("Disconnected :(");
         });
-        this.socket.on(EmitConstants.MESSAGE, (message) => {
-            console.log(EmitConstants.MESSAGE, message);
+        this.socket.on(SharedEmitConstants.MESSAGE, (message) => {
+            console.log(SharedEmitConstants.MESSAGE, message);
         });
-        this.socket.on(EmitConstants.ERROR, (message) => {
-            console.log(EmitConstants.ERROR, message);
+        this.socket.on(SharedEmitConstants.ERROR, (message) => {
+            console.log(SharedEmitConstants.ERROR, message);
         });
-        this.socket.on(EmitConstants.LIST_ROOM_INFOS, (roomInfos: RoomInfo[]) => {
-            console.log(EmitConstants.LIST_ROOM_INFOS, roomInfos);
+        this.socket.on(SharedEmitConstants.LIST_ROOM_INFOS, (roomInfos: RoomInfo[]) => {
+            console.log(SharedEmitConstants.LIST_ROOM_INFOS, roomInfos);
             DomUtils.displayRoomInfos(roomInfos)
         });
     }

@@ -1,4 +1,4 @@
-export abstract class EmitConstants {
+export abstract class SharedEmitConstants {
     static readonly MESSAGE: string = 'MESSAGE';
     static readonly RESPONSE: string = 'RESPONSE';
     static readonly CREATE_ROOM: string = 'CREATE_ROOM';

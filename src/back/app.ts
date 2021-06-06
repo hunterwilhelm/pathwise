@@ -4,7 +4,7 @@ import {Server as ServerIO, Socket} from "socket.io";
 import cookieParser from "cookie-parser";
 import {Server} from "http";
 import {AppConstants} from "./app.constants";
-import {EmitConstants} from "../shared/emit.constants";
+import {SharedEmitConstants} from "../shared/shared.emit.constants";
 import {AppUtils} from "./app.utils";
 import {Game} from "./game";
 import {Room} from "../shared/models/room.model";
@@ -64,7 +64,7 @@ class App {
             const rooms = this.game.getRoomInfos();
             if (roomCount !== rooms.length) {
                 roomCount = rooms.length;
-                this.io.sockets.emit(EmitConstants.LIST_ROOM_INFOS, rooms);
+                this.io.sockets.emit(SharedEmitConstants.LIST_ROOM_INFOS, rooms);
             }
         }, 1000);
     }
@@ -87,7 +87,7 @@ class App {
     private onSocketConnectionEventHandler(socket: Socket) {
         const userId = AppUtils.getCookieFromSocket(socket, AppConstants.COOKIE_USER_ID);
         if (userId == null) {
-            socket.emit(EmitConstants.ERROR, "Missing user id");
+            socket.emit(SharedEmitConstants.ERROR, "Missing user id");
             socket.disconnect();
             return;
         }
@@ -108,10 +108,10 @@ class App {
             this.game.removeUser(userId);
             console.log('Got disconnected!');
         });
-        socket.on(EmitConstants.RESPONSE, (response: string) => {
+        socket.on(SharedEmitConstants.RESPONSE, (response: string) => {
             console.log(response);
         });
-        socket.on(EmitConstants.CREATE_ROOM, (roomInfo: RoomInfo) => {
+        socket.on(SharedEmitConstants.CREATE_ROOM, (roomInfo: RoomInfo) => {
             const room: Room = {
                 id: AppUtils.getRandomRoomId(),
                 users: this.game.getUsersById(userId),
@@ -119,8 +119,8 @@ class App {
             };
             this.game.addRoom(room);
         });
-        socket.on(EmitConstants.LIST_ROOM_INFOS, () => {
-            this.io.sockets.emit(EmitConstants.LIST_ROOM_INFOS, this.game.getRoomInfos());
+        socket.on(SharedEmitConstants.LIST_ROOM_INFOS, () => {
+            this.io.sockets.emit(SharedEmitConstants.LIST_ROOM_INFOS, this.game.getRoomInfos());
         });
     }
 
