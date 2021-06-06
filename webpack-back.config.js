@@ -5,7 +5,7 @@ module.exports = {
   target: "node",
   mode: "production",
   entry: {
-    app: ["./src/back/index.ts"]
+    app: ["./src/back/server.ts"]
   },
   output: {
     path: path.resolve(__dirname, "./build/back"),
