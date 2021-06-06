@@ -66,7 +66,7 @@ class App {
         if (!request.cookies) {
             console.log("parseCookies was not used");
         } else {
-            if (request.cookies.hasOwnProperty && request.cookies.hasOwnProperty(AppConstants.COOKIE_USER_ID)) {
+            if (request.cookies?.hasOwnProperty(AppConstants.COOKIE_USER_ID)) {
                 console.log("User refreshed page with cookie " + request.cookies[AppConstants.COOKIE_USER_ID]);
             } else {
                 const userId = AppUtils.getRandomConnectionId();

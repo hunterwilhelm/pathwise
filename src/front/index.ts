@@ -18,15 +18,26 @@ class Client {
         console.log(document.querySelector('#say-hello'));
         document.querySelector('#say-hello')?.addEventListener('click', () => {
             this.socket.emit(SharedEmitConstants.RESPONSE, {a: "jkfhksdf"});
-        })
+        });
+        this.displayStatus("Connecting...");
+    }
+
+    displayStatus(message: string) {
+        const statusDom = document.querySelector("#connection-status");
+        if (statusDom) {
+            statusDom.textContent = message;
+        }
+        document.title = message;
     }
 
     registerConnectionListeners() {
-        this.socket.on("connection", (message) => {
-            console.log("connection", message);
+        this.socket.on("connect", () => {
+            console.log("connection");
+            this.displayStatus("Connected!");
         });
         this.socket.on("disconnect", (message) => {
             console.log("disconnect", message);
+            this.displayStatus("Disconnected :(");
         });
         this.socket.on(SharedEmitConstants.MESSAGE, (message) => {
             console.log(SharedEmitConstants.MESSAGE, message);
@@ -36,6 +47,7 @@ class Client {
         });
     }
 }
+
 window.addEventListener('load', () => {
     (new Client()).init();
 });
