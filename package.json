@@ -2,7 +2,7 @@
   "name": "pathwise",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "index.",
   "keywords": [],
   "author": "",
   "license": "ISC",
@@ -18,6 +18,7 @@
     "cookie": "^0.4.0",
     "cookie-parser": "^1.4.5",
     "express": "^4.17.1",
+    "path": "^0.12.7",
     "utf-8-validate": "^5.0.5",
     "ws": "^7.4.6"
   }
