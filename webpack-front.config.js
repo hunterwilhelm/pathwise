@@ -2,7 +2,7 @@ const path = require('path');
 
 module.exports = {
   entry: "./src/front/index.ts",
-  mode: 'production',
+  mode: 'development',
   module: {
     rules: [
       {
