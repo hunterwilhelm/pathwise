@@ -10,22 +10,32 @@ class Client {
     }
 
     init() {
-        this.registerEventListeners();
-        this.connectToServer();
+        this.setupDOM();
+        this.registerConnectionListeners();
     }
 
-    registerEventListeners() {
+    setupDOM() {
         console.log(document.querySelector('#say-hello'));
         document.querySelector('#say-hello')?.addEventListener('click', () => {
             this.socket.emit(SharedEmitConstants.RESPONSE, {a: "jkfhksdf"});
         })
     }
 
-    connectToServer() {
+    registerConnectionListeners() {
+        this.socket.on("connection", (message) => {
+            console.log("connection", message);
+        });
+        this.socket.on("disconnect", (message) => {
+            console.log("disconnect", message);
+        });
         this.socket.on(SharedEmitConstants.MESSAGE, (message) => {
+            console.log(SharedEmitConstants.MESSAGE, message);
+        });
+        this.socket.on(SharedEmitConstants.ERROR, (message) => {
+            console.log(SharedEmitConstants.ERROR, message);
         });
     }
 }
-window.addEventListener('load', event => {
+window.addEventListener('load', () => {
     (new Client()).init();
 });

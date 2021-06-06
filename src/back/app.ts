@@ -4,9 +4,9 @@ import {Server as ServerIO, Socket} from "socket.io";
 import cookieParser from "cookie-parser";
 import {Server} from "http";
 import {AppConstants} from "./app.constants";
-import {Room} from "./models/room.model";
 import {SharedEmitConstants} from "../shared/shared.emit.constants";
 import {AppUtils} from "./app.utils";
+import {Game} from "./game";
 
 const PORT = process.env.PORT || 3000;
 const INDEX = './front/index.html';
@@ -15,20 +15,20 @@ class App {
     app: Express;
     server: Server;
     io: ServerIO;
-    rooms: Room[] = [];
+    game: Game;
 
     constructor() {
         this.app = express();
         this.server = require('http').createServer(this.app);
         this.io = require('socket.io')(this.server);
-        const room: Room = {
-            name: "hello"
-        }
-        this.rooms.push(room)
+        this.game = new Game();
+        console.log(this.game);
     }
 
 
     init() {
+        console.log(this.game);
+
         this.setup();
         this.setupRoutes();
         this.registerListeners();
@@ -46,7 +46,9 @@ class App {
 
     private registerListeners() {
         this.server.listen(PORT, App.onStartEventHandler);
-        this.io.on("connection", this.onSocketConnectionEventHandler);
+        this.io.on("connection", (socket: Socket) => {
+            this.onSocketConnectionEventHandler(socket)
+        });
     }
 
     private static onStartEventHandler() {
@@ -76,11 +78,27 @@ class App {
     }
 
     private onSocketConnectionEventHandler(socket: Socket) {
-        const cookieData = AppUtils.getCookieFromSocket(socket, AppConstants.COOKIE_USER_ID);
-        if (socket.handshake.headers.cookie != null) {
-            console.log("Socket connected with cookie", cookieData);
+        const userId = AppUtils.getCookieFromSocket(socket, AppConstants.COOKIE_USER_ID);
+        if (userId == null) {
+            socket.emit(SharedEmitConstants.ERROR, "Missing user id");
+            socket.disconnect();
+            return;
         }
+
+        const onlineUsersSameId = this.game.getUsersById(userId);
+        if (onlineUsersSameId.length > 0) {
+            console.log("Trying to remove users with the same id", onlineUsersSameId.length)
+            onlineUsersSameId.forEach(u => {
+                u.socket.disconnect();
+            });
+            this.game.removeUser(userId);
+        }
+
+        this.game.addUser(userId, socket);
+
+
         socket.on("disconnect", () => {
+            this.game.removeUser(userId);
             console.log('Got disconnected!');
         });
         socket.on(SharedEmitConstants.RESPONSE, (response: string) => {
