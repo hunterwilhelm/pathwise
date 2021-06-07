@@ -1,11 +1,10 @@
-import p5, {Graphics} from "p5";
+import p5, {Image} from "p5";
 import {LogicService} from "./logic.service";
 import {GetService} from "./get.service";
 import {Turn} from "./models/turn.model";
 import {EdgeSet} from "./models/edge-set.model";
 import {Point} from "./models/point.model";
 import {DisplayService} from "./display.service";
-import {Utils} from "./utils";
 
 export class SketchApp {
     p: p5;
@@ -13,12 +12,12 @@ export class SketchApp {
     getService: GetService;
     displayService: DisplayService;
 
-    imgBackground: p5.Image;
-    imgStar1: p5.Image;
-    imgStar2: p5.Image;
-    imgStar3: p5.Image;
-    imgSpeech1: p5.Image;
-    imgSpeech2: Graphics;
+    imgBackground: Image;
+    imgStar1: Image;
+    imgStar2: Image;
+    imgStar3: Image;
+    imgSpeech1: Image;
+    imgSpeech2: Image;
     comicFont: string | object;
     points: Point[];
     turns: Turn[];
@@ -36,13 +35,9 @@ export class SketchApp {
         this.imgStar2 = p.loadImage("assets/star2.png");
         this.imgStar3 = p.loadImage("assets/star3.png");
         this.imgSpeech1 = p.loadImage("assets/speech.png");
+        this.imgSpeech2 = p.loadImage("assets/speech2.png");
 
         this.comicFont = p.loadFont("assets/ArchitectsDaughter-Regular.ttf");
-
-        this.imgSpeech2 = p.createGraphics(this.imgSpeech1.width, this.imgSpeech1.height);
-        this.imgSpeech2.translate(this.imgSpeech2.width, 0);
-        this.imgSpeech2.scale(-1, 1);
-        this.imgSpeech2.image(this.imgSpeech1, 0, 0);
 
         this.points = [];
         this.turns = [];

@@ -19,17 +19,6 @@ export class Utils {
     }
 
 
-// function polygon(x, y, diameter,npoints) {
-//   const angle = TWO_PI / npoints;
-//   beginShape();
-//   for (var a = 0; a < TWO_PI; a += angle) {
-//     const sx = x + cos(a) * diameter;
-//     const sy = y + sin(a) * diameter;
-//     vertex(sx, sy);
-//   }
-//   endShape(CLOSE);
-// }
-
     static sideLengthOfPolygon(radius: number, npoints: number): number{
         return 2 * radius * Math.sin(Math.PI / npoints);
     }
