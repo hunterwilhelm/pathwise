@@ -21,10 +21,10 @@ class Client {
 
     setupDOM() {
         document.querySelector('#create-room-button')?.addEventListener('click', () => {
-            this.socket.emit(SharedEmitConstants.CREATE_ROOM);
+            this.socket.emit(SharedEmitConstants.ROOM_CREATE);
         });
         document.querySelector('#list-rooms-button')?.addEventListener('click', () => {
-            this.socket.emit(SharedEmitConstants.LIST_ROOM_INFOS);
+            this.socket.emit(SharedEmitConstants.ROOM_LIST_INFOS);
         });
         DomUtils.displayStatus("Connecting...");
     }
@@ -52,7 +52,7 @@ class Client {
             DomUtils.displayErrorStatus(message);
             lastTimeout = window.setTimeout(() => DomUtils.displayErrorStatus(""), 3000);
         });
-        this.socket.on(SharedEmitConstants.LIST_ROOM_INFOS, (roomInfos: RoomInfo[]) => {
+        this.socket.on(SharedEmitConstants.ROOM_LIST_INFOS, (roomInfos: RoomInfo[]) => {
             if (this.userId) {
                 DomUtils.displayRoomInfos(roomInfos, this.userId,
                     (roomInfo) => this.onJoinRoomEventHandler(roomInfo),
@@ -71,11 +71,11 @@ class Client {
     }
 
     onJoinRoomEventHandler(roomInfo: RoomInfo) {
-        this.socket.emit(SharedEmitConstants.JOIN_ROOM, roomInfo);
+        this.socket.emit(SharedEmitConstants.ROOM_JOIN, roomInfo);
     }
 
     onLeaveRoomEventHandler(roomInfo: RoomInfo) {
-        this.socket.emit(SharedEmitConstants.LEAVE_ROOM, roomInfo);
+        this.socket.emit(SharedEmitConstants.ROOM_LEAVE, roomInfo);
     }
 }
 

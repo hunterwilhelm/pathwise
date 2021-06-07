@@ -1,6 +1,6 @@
 import cookie from "cookie";
 import {Socket} from "socket.io";
-import {Game} from "./game";
+import {GameDataService} from "./game.data.service";
 
 export class AppUtils {
     private static generateRandomString(chars: string, len: number) {
@@ -15,7 +15,7 @@ export class AppUtils {
         return AppUtils.generateRandomString('0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ', 32);
     }
 
-    static getRandomRoomId(game: Game): string {
+    static getRandomRoomId(game: GameDataService): string {
         do {
             const id = AppUtils.generateRandomString('0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ', 4);
             if (!game.getRoomById(id)) {
@@ -36,7 +36,7 @@ export class AppUtils {
         return undefined;
     }
 
-    static removeAndDisconnectUsersByIdFromGame(game: Game, userId: string) {
+    static removeAndDisconnectUsersByIdFromGame(game: GameDataService, userId: string) {
         const onlineUsersSameId = game.getUsersById(userId);
         if (onlineUsersSameId.length > 0) {
             console.log("Trying to remove users with the same id", onlineUsersSameId.length)

@@ -1,9 +1,14 @@
 export abstract class SharedEmitConstants {
-    static readonly RESPONSE: string = 'RESPONSE';
-    static readonly CREATE_ROOM: string = 'CREATE_ROOM';
-    static readonly JOIN_ROOM: string = 'JOIN_ROOM';
-    static readonly LEAVE_ROOM: string = 'LEAVE_ROOM';
-    static readonly LIST_ROOM_INFOS: string = 'LIST_ROOM_INFOS';
+    // game
+    static readonly GAME_MESSAGE: string = 'GAME_MESSAGE';
+
+    // rooms
+    static readonly ROOM_CREATE: string = 'ROOM_CREATE';
+    static readonly ROOM_JOIN: string = 'ROOM_JOIN';
+    static readonly ROOM_LEAVE: string = 'ROOM_LEAVE';
+    static readonly ROOM_LIST_INFOS: string = 'ROOM_LIST_INFOS';
+
+    // system
     static readonly USER_INFO: string = 'USER_INFO';
     static readonly ERROR: string = 'ERROR';
 }

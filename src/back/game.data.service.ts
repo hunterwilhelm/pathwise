@@ -3,7 +3,7 @@ import {User} from "./models/user.model";
 import {Socket} from "socket.io";
 import {RoomInfo} from "../shared/models/room.info.model";
 
-export class Game {
+export class GameDataService {
     private rooms: Room[] = [];
     private users: User[] = [];
     private readonly ROOM_EXPIRATION_TIME_IN_MILLISECONDS: number = 2 * 1000;

@@ -5,12 +5,13 @@ import cookieParser from "cookie-parser";
 import {Server} from "http";
 import {SharedEmitConstants} from "../shared/constants/shared.emit.constants";
 import {AppUtils} from "./app.utils";
-import {Game} from "./game";
+import {GameDataService} from "./game.data.service";
 import {Room} from "./models/room.model";
 import {RoomInfo} from "../shared/models/room.info.model";
 import {User} from "./models/user.model";
 import {UserInfo} from "../shared/models/user.info.model";
 import {SharedCookieConstants} from "../shared/constants/shared.cookie.constants";
+import {GameLogicService} from "./game.logic.service";
 
 const PORT = process.env.PORT || 3000;
 const INDEX = './front/index.html';
@@ -19,13 +20,15 @@ class App {
     app: Express;
     server: Server;
     io: ServerIO;
-    game: Game;
+    gameDataService: GameDataService;
+    gameLogicService: GameLogicService;
 
     constructor() {
         this.app = express();
         this.server = require('http').createServer(this.app);
         this.io = require('socket.io')(this.server);
-        this.game = new Game();
+        this.gameDataService = new GameDataService();
+        this.gameLogicService = new GameLogicService(this.gameDataService);
         this.init();
     }
 
@@ -83,10 +86,10 @@ class App {
             return;
         }
         const roomId = AppUtils.getCookieFromSocket(socket, SharedCookieConstants.ROOM_ID);
-        const room: Room | undefined = roomId ? this.game.getRoomById(roomId) : undefined;
+        const room: Room | undefined = roomId ? this.gameDataService.getRoomById(roomId) : undefined;
         // login
-        AppUtils.removeAndDisconnectUsersByIdFromGame(this.game, userId);
-        const user = this.game.addUser(userId, socket);
+        AppUtils.removeAndDisconnectUsersByIdFromGame(this.gameDataService, userId);
+        const user = this.gameDataService.addUser(userId, socket);
         if (room) {
             this.joinRoom(room, user);
             this.broadcastRoomInfos();
@@ -98,22 +101,19 @@ class App {
 
         // register
         socket.on("disconnect", () => {
-            this.game.logoutUser(user.id);
+            this.gameDataService.logoutUser(user.id);
             console.log('Got disconnected!', user.id);
             this.broadcastRoomInfos();
         });
-        socket.on(SharedEmitConstants.RESPONSE, (response: string) => {
-            console.log(response);
-        });
-        socket.on(SharedEmitConstants.CREATE_ROOM, () => {
+        socket.on(SharedEmitConstants.ROOM_CREATE, () => {
             if (this.createRoom(user)) {
                 this.broadcastRoomInfos();
             } else {
                 socket.emit(SharedEmitConstants.ERROR, "You are already in a room");
             }
         });
-        socket.on(SharedEmitConstants.JOIN_ROOM, (roomInfo: RoomInfo) => {
-            const room = this.game.getRoomById(roomInfo.id);
+        socket.on(SharedEmitConstants.ROOM_JOIN, (roomInfo: RoomInfo) => {
+            const room = this.gameDataService.getRoomById(roomInfo.id);
             if (room) {
                 if (this.joinRoom(room, user)) {
                     this.broadcastRoomInfos();
@@ -124,41 +124,41 @@ class App {
                 socket.emit(SharedEmitConstants.ERROR, "That room does not exist");
             }
         });
-        socket.on(SharedEmitConstants.LEAVE_ROOM, (roomInfo: RoomInfo) => {
-            const room = this.game.getRoomById(roomInfo.id);
+        socket.on(SharedEmitConstants.ROOM_LEAVE, (roomInfo: RoomInfo) => {
+            const room = this.gameDataService.getRoomById(roomInfo.id);
             if (room) {
-                this.game.leaveRoom(room.id, user.id);
+                this.gameDataService.leaveRoom(room.id, user.id);
                 this.broadcastRoomInfos();
             } else {
                 socket.emit(SharedEmitConstants.ERROR, "You are already in a room");
             }
         });
-        socket.on(SharedEmitConstants.LIST_ROOM_INFOS, () => this.broadcastRoomInfos());
+        socket.on(SharedEmitConstants.ROOM_LIST_INFOS, () => this.broadcastRoomInfos());
     }
 
     private broadcastRoomInfos() {
-        this.io.sockets.emit(SharedEmitConstants.LIST_ROOM_INFOS, this.game.getRoomInfos());
+        this.io.sockets.emit(SharedEmitConstants.ROOM_LIST_INFOS, this.gameDataService.getRoomInfos());
     }
 
     private createRoom(user: User): boolean {
-        if (this.game.getRoomsByUserId(user.id).length !== 0) return false;
+        if (this.gameDataService.getRoomsByUserId(user.id).length !== 0) return false;
         const room: Room = {
-            id: AppUtils.getRandomRoomId(this.game),
+            id: AppUtils.getRandomRoomId(this.gameDataService),
             users: [user],
         };
-        this.game.addRoom(room);
+        this.gameDataService.addRoom(room);
         return true;
     }
 
     private joinRoom(room: Room, user: User): boolean {
-        if (this.game.getRoomsByUserId(user.id).length !== 0) return false;
-        this.game.joinRoom(room, user);
+        if (this.gameDataService.getRoomsByUserId(user.id).length !== 0) return false;
+        this.gameDataService.joinRoom(room, user);
         return true;
     }
 
     private registerCheckers() {
         setInterval(() => {
-            if (this.game.deleteExpiredRooms()) {
+            if (this.gameDataService.deleteExpiredRooms()) {
                 this.broadcastRoomInfos();
             }
         }, 1000);
