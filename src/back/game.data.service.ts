@@ -2,6 +2,7 @@ import {Room} from "./models/room.model";
 import {User} from "./models/user.model";
 import {Socket} from "socket.io";
 import {RoomInfo} from "../shared/models/room.info.model";
+import {AppUtils} from "./app.utils";
 
 export class GameDataService {
     private rooms: Room[] = [];
@@ -29,7 +30,7 @@ export class GameDataService {
 
     logoutUser(userId: string) {
         this.users = this.users.filter(u => u.id != userId);
-        this.getRoomsByUserId(userId).forEach(r => {
+        this.getRoomInfosByUserId(userId).forEach(r => {
             this.leaveRoom(r.id, userId)
         })
     }
@@ -48,16 +49,12 @@ export class GameDataService {
         });
     }
 
-    getRoomsByUserId(userId: string): RoomInfo[] {
-        return this.rooms
-            .filter(r => r.users.some(u => u.id === userId))
-            .map(r => {
-                const roomInfo: RoomInfo = {
-                    userIds: r.users.map(u => u.id),
-                    id: r.id
-                }
-                return roomInfo;
-            });
+    getRoomInfosByUserId(userId: string): RoomInfo[] {
+        return AppUtils.convertRoomsToRoomInfos(this.getRoomsByUserId(userId));
+    }
+
+    getRoomsByUserId(userId: string): Room[] {
+        return this.rooms.filter(r => r.users.some(u => u.id === userId));
     }
 
     getRoomById(roomId: string): Room | undefined {

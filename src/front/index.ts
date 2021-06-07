@@ -17,6 +17,8 @@ class Client {
     init() {
         this.setupDOM();
         this.registerConnectionListeners();
+        this.registerRoomListeners();
+        this.registerGameListeners();
     }
 
     setupDOM() {
@@ -52,16 +54,20 @@ class Client {
             DomUtils.displayErrorStatus(message);
             lastTimeout = window.setTimeout(() => DomUtils.displayErrorStatus(""), 3000);
         });
+    }
+
+    registerRoomListeners() {
         this.socket.on(SharedEmitConstants.ROOM_LIST_INFOS, (roomInfos: RoomInfo[]) => {
             if (this.userId) {
                 DomUtils.displayRoomInfos(roomInfos, this.userId,
                     (roomInfo) => this.onJoinRoomEventHandler(roomInfo),
-                    (roomInfo) => this.onLeaveRoomEventHandler(roomInfo));
+                    (roomInfo) => this.onLeaveRoomEventHandler(roomInfo),
+                    () => this.onGameMessageEventHandler());
 
 
                 const userId = this.userId;
                 const userRooms = roomInfos.filter(r => r.userIds.includes(userId));
-                    if (userRooms.length) {
+                if (userRooms.length) {
                     CookieUtils.setCookie(SharedCookieConstants.ROOM_ID, userRooms[0].id)
                 } else {
                     CookieUtils.deleteCookie(SharedCookieConstants.ROOM_ID);
@@ -70,12 +76,22 @@ class Client {
         });
     }
 
+    registerGameListeners() {
+        this.socket.on(SharedEmitConstants.GAME_MESSAGE, (message: string) => {
+            alert(message);
+        })
+    }
+
     onJoinRoomEventHandler(roomInfo: RoomInfo) {
         this.socket.emit(SharedEmitConstants.ROOM_JOIN, roomInfo);
     }
 
     onLeaveRoomEventHandler(roomInfo: RoomInfo) {
         this.socket.emit(SharedEmitConstants.ROOM_LEAVE, roomInfo);
+    }
+
+    onGameMessageEventHandler() {
+        this.socket.emit(SharedEmitConstants.GAME_MESSAGE, "hello");
     }
 }
 

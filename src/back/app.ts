@@ -105,6 +105,11 @@ class App {
             console.log('Got disconnected!', user.id);
             this.broadcastRoomInfos();
         });
+        this.registerRoomEvents(socket, user);
+        this.registerGameEvents(socket, user);
+    }
+
+    private registerRoomEvents(socket: Socket, user: User) {
         socket.on(SharedEmitConstants.ROOM_CREATE, () => {
             if (this.createRoom(user)) {
                 this.broadcastRoomInfos();
@@ -136,12 +141,18 @@ class App {
         socket.on(SharedEmitConstants.ROOM_LIST_INFOS, () => this.broadcastRoomInfos());
     }
 
+    private registerGameEvents(socket: Socket, user: User) {
+        socket.on(SharedEmitConstants.GAME_MESSAGE, (message) => {
+            this.gameLogicService.sendRoomMessage(user, message);
+        })
+    }
+
     private broadcastRoomInfos() {
         this.io.sockets.emit(SharedEmitConstants.ROOM_LIST_INFOS, this.gameDataService.getRoomInfos());
     }
 
     private createRoom(user: User): boolean {
-        if (this.gameDataService.getRoomsByUserId(user.id).length !== 0) return false;
+        if (this.gameDataService.getRoomInfosByUserId(user.id).length !== 0) return false;
         const room: Room = {
             id: AppUtils.getRandomRoomId(this.gameDataService),
             users: [user],
@@ -151,7 +162,7 @@ class App {
     }
 
     private joinRoom(room: Room, user: User): boolean {
-        if (this.gameDataService.getRoomsByUserId(user.id).length !== 0) return false;
+        if (this.gameDataService.getRoomInfosByUserId(user.id).length !== 0) return false;
         this.gameDataService.joinRoom(room, user);
         return true;
     }

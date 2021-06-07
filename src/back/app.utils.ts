@@ -1,6 +1,8 @@
 import cookie from "cookie";
 import {Socket} from "socket.io";
 import {GameDataService} from "./game.data.service";
+import {RoomInfo} from "../shared/models/room.info.model";
+import {Room} from "./models/room.model";
 
 export class AppUtils {
     private static generateRandomString(chars: string, len: number) {
@@ -56,5 +58,15 @@ export class AppUtils {
         return sanitized.length > length ?
             sanitized.substring(0, length - 3) + "..." :
             sanitized;
+    }
+
+    static convertRoomsToRoomInfos(rooms: Room[]): RoomInfo[] {
+        return rooms.map(r => {
+            const roomInfo: RoomInfo = {
+                userIds: r.users.map(u => u.id),
+                id: r.id
+            }
+            return roomInfo;
+        });
     }
 }
