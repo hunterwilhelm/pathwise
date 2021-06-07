@@ -15,7 +15,6 @@ export class LogicService {
 
     clickClosestPoint() {
         const closestIndex = Utils.findClosestPointIndex(this.app.points, this.p.mouseX, this.p.mouseY);
-        // console.log(closestIndex);
         if (closestIndex !== undefined) {
             this.app.points[closestIndex].color = this.app.turns[this.app.turn].color;
             this.app.points[closestIndex].img = this.app.turns[this.app.turn].img;

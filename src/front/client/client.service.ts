@@ -5,10 +5,16 @@ import {SharedEmitConstants} from "../../shared/constants/shared.emit.constants"
 import {CookieUtils} from "./cookie.utils";
 import {SharedCookieConstants} from "../../shared/constants/shared.cookie.constants";
 
+export type BooleanEventHandler = (userInRoom: boolean) => void;
 
-export class Client {
+export class ClientService {
     socket: Socket;
     userId: string | undefined;
+
+    private userInRoom: boolean = false;
+    private userInRoomListeners: BooleanEventHandler[] = [];
+    private opponentInRoom: boolean = false;
+    private opponentInRoomListeners: BooleanEventHandler[] = [];
 
     constructor() {
         this.socket = io();
@@ -60,14 +66,23 @@ export class Client {
     registerRoomListeners() {
         this.socket.on(SharedEmitConstants.ROOM_LIST_INFOS, (roomInfos: RoomInfo[]) => {
             if (this.userId) {
-                DomUtils.displayRoomInfos(roomInfos, this.userId,
-                    (roomInfo) => this.onJoinRoomEventHandler(roomInfo),
-                    (roomInfo) => this.onLeaveRoomEventHandler(roomInfo),
-                    () => this.onGameMessageEventHandler());
-
-
                 const userId = this.userId;
                 const userRooms = roomInfos.filter(r => r.userIds.includes(userId));
+                this.setUserInRoom(userRooms.length > 0);
+                this.setOpponentInRoom(userRooms.every(r=> {
+                    return r.userIds.length > 1
+                }));
+
+                DomUtils.displayRoomInfos(
+                    roomInfos,
+                    this.userInRoom,
+                    this.userId,
+                    (roomInfo) => this.onJoinRoomEventHandler(roomInfo),
+                    (roomInfo) => this.onLeaveRoomEventHandler(roomInfo),
+                    () => this.sendMessage()
+                );
+
+
                 if (userRooms.length) {
                     CookieUtils.setCookie(SharedCookieConstants.ROOM_ID, userRooms[0].id)
                 } else {
@@ -91,7 +106,31 @@ export class Client {
         this.socket.emit(SharedEmitConstants.ROOM_LEAVE, roomInfo);
     }
 
-    onGameMessageEventHandler() {
+    sendMessage() {
         this.socket.emit(SharedEmitConstants.GAME_MESSAGE, "hello");
     }
+
+    subscribeToUserInRoom(ev: BooleanEventHandler) {
+        this.userInRoomListeners.push(ev);
+    }
+
+    setUserInRoom(value: boolean) {
+        this.userInRoom = value;
+        this.userInRoomListeners.forEach(eventHandler => {
+            eventHandler(value);
+        })
+    }
+
+    subscribeToOpponentInRoom(ev: BooleanEventHandler) {
+        this.opponentInRoomListeners.push(ev);
+    }
+
+    setOpponentInRoom(value: boolean) {
+        this.opponentInRoom = value;
+        this.opponentInRoomListeners.forEach(eventHandler => {
+            eventHandler(value);
+        })
+    }
+
+
 }

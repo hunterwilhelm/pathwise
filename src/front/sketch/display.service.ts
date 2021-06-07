@@ -82,8 +82,7 @@ export class DisplayService {
         }
     }
 
-    displayGameWelcome() {
-
+    private displayMainScreen() {
         // background
         this.p.background(0);
         this.p.noStroke();
@@ -93,31 +92,49 @@ export class DisplayService {
         this.p.fill(255);
         this.p.rect(this.p.width / 2, this.p.height / 2, this.app.myScale * this.app.imgBackground.width, this.app.myScale * this.app.imgBackground.height);
 
-        // text
+        // icons
+        this.p.image(this.app.turns[1].img, this.p.width / 2 - 200, this.p.height / 2 - 270);
+        this.p.image(this.app.turns[0].img, this.p.width / 2 + 200, this.p.height / 2 - 270);
+
+        // title
         this.p.noStroke();
         this.p.fill(this.app.turns[1].color);
         this.p.textSize(56);
         this.p.textAlign(this.p.CENTER, this.p.CENTER);
         this.p.text("Pathwise", this.p.width / 2, this.p.height / 2 - 275);
         this.p.imageMode(this.p.CENTER);
+    }
 
+    private displayPrimaryInstructions(message: string) {
+        this.p.textAlign(this.p.CENTER, this.p.CENTER);
         this.p.textSize(35);
         this.p.fill(30);
         this.p.stroke(30);
         this.p.strokeWeight(1);
-        this.p.text("On your turn, click on any tile\nto change it to your color. Your goal is\nto create a pathway that connects\nthe two sides of your color.", this.p.width / 2, this.p.height / 2);
+        this.p.text(message, this.p.width / 2, this.p.height / 2);
+
+    }
+
+    displayGameWelcomeInstructions() {
+        this.displayMainScreen();
+        // text
+        this.displayPrimaryInstructions("On your turn, click on any tile\nto change it to your color. Your goal is\nto create a pathway that connects\nthe two sides of your color.");
 
         this.p.textSize(30);
         this.p.fill(this.app.turns[1].color);
         this.p.noStroke();
         this.p.text("Press anywhere to begin", this.p.width / 2, this.p.height / 2 + 200);
+    }
+
+    displayGameWaitingRoomInstructions() {
+        this.displayMainScreen();
+        this.displayPrimaryInstructions("Waiting for another user to join...");
+    }
 
 
-        // icons
-        this.p.image(this.app.turns[1].img, this.p.width / 2 - 200, this.p.height / 2 - 270);
-        this.p.image(this.app.turns[0].img, this.p.width / 2 + 200, this.p.height / 2 - 270);
-
-
+    displayGameJoinRoomInstructions() {
+        this.displayMainScreen();
+        this.displayPrimaryInstructions("Please join a room to begin.");
     }
 
     displayWinScreen() {
@@ -158,5 +175,4 @@ export class DisplayService {
             this.p.text("Good Game!", this.app.turns[t].speechPos.x, this.app.turns[t].speechPos.y - 35);
         });
     }
-
 }

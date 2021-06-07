@@ -1,8 +1,8 @@
-import {Client} from "./client/client";
+import {ClientService} from "./client/client.service";
 import p5 from "p5";
-import {sketch} from "./sketch/sketch";
+import {sketchFactory} from "./sketch.factory";
 
 window.addEventListener('load', () => {
-    new Client();
-    new p5(sketch);
+    const client = new ClientService();
+    new p5(sketchFactory(client));
 });

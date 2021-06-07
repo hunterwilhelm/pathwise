@@ -26,13 +26,12 @@ export class DomUtils {
         DomUtils.setElementTextContent("#error-status", message);
     }
 
-    static displayRoomInfos(roomInfo: RoomInfo[], userId: string, joinRoomCallback: RoomInfoCallback, leaveRoomCallback: RoomInfoCallback, messageCallback: VoidCallback) {
-        const userInRoom = roomInfo.filter(r => r.userIds.includes(userId)).length > 0;
+    static displayRoomInfos(roomInfos: RoomInfo[], userInRoom: boolean, userId: string, joinRoomCallback: RoomInfoCallback, leaveRoomCallback: RoomInfoCallback, messageCallback: VoidCallback) {
 
         const listRoomsTable = document.querySelector("#list-rooms-table tbody");
         if (listRoomsTable) {
             const documentFragment = document.createDocumentFragment();
-            roomInfo.forEach(r => {
+            roomInfos.forEach(r => {
                 const tr = document.createElement("tr");
                 const users = document.createElement("td");
                 const id = document.createElement("td");

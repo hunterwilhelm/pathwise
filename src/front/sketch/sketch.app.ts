@@ -5,9 +5,12 @@ import {Turn} from "./models/turn.model";
 import {EdgeSet} from "./models/edge-set.model";
 import {Point} from "./models/point.model";
 import {DisplayService} from "./display.service";
+import {ClientService} from "../client/client.service";
 
 export class SketchApp {
     p: p5;
+    client: ClientService;
+
     logicService: LogicService;
     getService: GetService;
     displayService: DisplayService;
@@ -27,9 +30,13 @@ export class SketchApp {
     matrix: number[][];
     edgeIndexes: EdgeSet[];
     borderIndexes: number[];
+    private userInRoom: boolean = false;
+    private opponentInRoom: boolean = false;
 
-    constructor(p: p5) {
+    constructor(p: p5, client: ClientService) {
         this.p = p;
+        this.client = client;
+
         this.imgBackground = this.p.loadImage("assets/pathwise.png");
         this.imgStar1 = p.loadImage("assets/star1.png");
         this.imgStar2 = p.loadImage("assets/star2.png");
@@ -51,18 +58,34 @@ export class SketchApp {
         this.logicService = new LogicService(p, this);
         this.getService = new GetService(p, this);
         this.displayService = new DisplayService(p, this);
+
+        this.registerClientListeners();
+    }
+
+    private registerClientListeners() {
+        this.client.subscribeToUserInRoom((value: boolean) => {
+            this.userInRoom = value;
+        });
+        this.client.subscribeToOpponentInRoom((value: boolean) => {
+            this.opponentInRoom = value;
+        })
     }
 
 
-    x = 100;
-    y = 100;
     w = 30;
     myScale = 1;
 
 
     setup() {
+        const canvas = this.p.createCanvas(952 + 20, 720 + 20);
+        canvas.mouseClicked(() => {
+            this.mouseClicked()
+
+            // prevent default
+            return false;
+        });
+
         this.p.textFont(this.comicFont, 48);
-        this.p.createCanvas(952 + 20, 720 + 20);
         this.points = this.getService.getPoints();
         this.turns = this.getService.getTurns();
         this.matrix = this.getService.getAdjacencyMatrix();
@@ -74,8 +97,16 @@ export class SketchApp {
     }
 
     draw() {
+        if (!this.userInRoom) {
+            this.displayService.displayGameJoinRoomInstructions();
+            return;
+        }
+        if (!this.opponentInRoom) {
+            this.displayService.displayGameWaitingRoomInstructions();
+            return;
+        }
         if (!this.started) {
-            this.displayService.displayGameWelcome();
+            this.displayService.displayGameWelcomeInstructions();
             return;
         }
         this.displayService.displayBackground();
@@ -88,6 +119,9 @@ export class SketchApp {
     }
 
     mouseClicked() {
+        if (this.userInRoom && !this.opponentInRoom) {
+            return;
+        }
         if (!this.started) {
             this.logicService.startGame();
             return;
