@@ -3,12 +3,14 @@ import path from "path";
 import {Server as ServerIO, Socket} from "socket.io";
 import cookieParser from "cookie-parser";
 import {Server} from "http";
-import {AppConstants} from "./app.constants";
-import {SharedEmitConstants} from "../shared/shared.emit.constants";
+import {SharedEmitConstants} from "../shared/constants/shared.emit.constants";
 import {AppUtils} from "./app.utils";
 import {Game} from "./game";
-import {Room} from "../shared/models/room.model";
+import {Room} from "./models/room.model";
 import {RoomInfo} from "../shared/models/room.info.model";
+import {User} from "./models/user.model";
+import {UserInfo} from "../shared/models/user.info.model";
+import {SharedCookieConstants} from "../shared/constants/shared.cookie.constants";
 
 const PORT = process.env.PORT || 3000;
 const INDEX = './front/index.html';
@@ -24,17 +26,15 @@ class App {
         this.server = require('http').createServer(this.app);
         this.io = require('socket.io')(this.server);
         this.game = new Game();
-        console.log(this.game);
+        this.init();
     }
 
 
     init() {
-        console.log(this.game);
-
         this.setup();
         this.setupRoutes();
         this.registerListeners();
-        this.registerBroadcastsIntervals();
+        this.registerCheckers();
     }
 
     private setup() {
@@ -42,7 +42,7 @@ class App {
     }
 
     private setupRoutes() {
-        this.app.get("/", this.onPageLoadEventHandler);
+        this.app.get("/", App.onPageLoadEventHandler);
         this.app.use(express.static(path.join(__dirname, 'front')));
     }
 
@@ -58,73 +58,112 @@ class App {
     }
 
 
-    private registerBroadcastsIntervals() {
-        let roomCount = this.game.getRoomInfos().length;
-        setInterval(() => {
-            const rooms = this.game.getRoomInfos();
-            if (roomCount !== rooms.length) {
-                roomCount = rooms.length;
-                this.io.sockets.emit(SharedEmitConstants.LIST_ROOM_INFOS, rooms);
-            }
-        }, 1000);
-    }
-
-    private onPageLoadEventHandler(request: Request, res: Response) {
+    private static onPageLoadEventHandler(request: Request, res: Response) {
         if (!request.cookies) {
             console.log("parseCookies was not used");
         } else {
-            if (request.cookies.hasOwnProperty && request.cookies.hasOwnProperty(AppConstants.COOKIE_USER_ID)) {
-                console.log("User refreshed page with cookie " + request.cookies[AppConstants.COOKIE_USER_ID]);
+            if (request.cookies.hasOwnProperty && request.cookies.hasOwnProperty(SharedCookieConstants.USER_ID)) {
+                console.log("User refreshed page with cookie " + request.cookies[SharedCookieConstants.USER_ID]);
             } else {
                 const userId = AppUtils.getRandomUserId();
-                console.log("Set cookie: ", AppConstants.COOKIE_USER_ID, "to", userId)
-                res.cookie(AppConstants.COOKIE_USER_ID, userId, {maxAge: 360000});
+                console.log("Set cookie: ", SharedCookieConstants.USER_ID, "to", userId)
+                res.cookie(SharedCookieConstants.USER_ID, userId, {maxAge: 360000});
             }
             res.sendFile(INDEX, {root: __dirname});
         }
     }
 
     private onSocketConnectionEventHandler(socket: Socket) {
-        const userId = AppUtils.getCookieFromSocket(socket, AppConstants.COOKIE_USER_ID);
+
+        // validate
+        const userId = AppUtils.getCookieFromSocket(socket, SharedCookieConstants.USER_ID);
         if (userId == null) {
             socket.emit(SharedEmitConstants.ERROR, "Missing user id");
             socket.disconnect();
             return;
         }
-
-        const onlineUsersSameId = this.game.getUsersById(userId);
-        if (onlineUsersSameId.length > 0) {
-            console.log("Trying to remove users with the same id", onlineUsersSameId.length)
-            onlineUsersSameId.forEach(u => {
-                u.socket.disconnect();
-            });
-            this.game.removeUser(userId);
+        const roomId = AppUtils.getCookieFromSocket(socket, SharedCookieConstants.ROOM_ID);
+        const room: Room | undefined = roomId ? this.game.getRoomById(roomId) : undefined;
+        // login
+        AppUtils.removeAndDisconnectUsersByIdFromGame(this.game, userId);
+        const user = this.game.addUser(userId, socket);
+        if (room) {
+            this.joinRoom(room, user);
+            this.broadcastRoomInfos();
         }
 
-        this.game.addUser(userId, socket);
+        // update
+        socket.emit(SharedEmitConstants.USER_INFO, <UserInfo>{id: user.id})
+        this.broadcastRoomInfos();
 
-
+        // register
         socket.on("disconnect", () => {
-            this.game.removeUser(userId);
-            console.log('Got disconnected!');
+            this.game.logoutUser(user.id);
+            console.log('Got disconnected!', user.id);
+            this.broadcastRoomInfos();
         });
         socket.on(SharedEmitConstants.RESPONSE, (response: string) => {
             console.log(response);
         });
-        socket.on(SharedEmitConstants.CREATE_ROOM, (roomInfo: RoomInfo) => {
-            const room: Room = {
-                id: AppUtils.getRandomRoomId(),
-                users: this.game.getUsersById(userId),
-                ...roomInfo
-            };
-            this.game.addRoom(room);
+        socket.on(SharedEmitConstants.CREATE_ROOM, () => {
+            if (this.createRoom(user)) {
+                this.broadcastRoomInfos();
+            } else {
+                socket.emit(SharedEmitConstants.ERROR, "You are already in a room");
+            }
         });
-        socket.on(SharedEmitConstants.LIST_ROOM_INFOS, () => {
-            this.io.sockets.emit(SharedEmitConstants.LIST_ROOM_INFOS, this.game.getRoomInfos());
+        socket.on(SharedEmitConstants.JOIN_ROOM, (roomInfo: RoomInfo) => {
+            const room = this.game.getRoomById(roomInfo.id);
+            if (room) {
+                if (this.joinRoom(room, user)) {
+                    this.broadcastRoomInfos();
+                } else {
+                    socket.emit(SharedEmitConstants.ERROR, "You are already in a different room");
+                }
+            } else {
+                socket.emit(SharedEmitConstants.ERROR, "That room does not exist");
+            }
         });
+        socket.on(SharedEmitConstants.LEAVE_ROOM, (roomInfo: RoomInfo) => {
+            const room = this.game.getRoomById(roomInfo.id);
+            if (room) {
+                this.game.leaveRoom(room.id, user.id);
+                this.broadcastRoomInfos();
+            } else {
+                socket.emit(SharedEmitConstants.ERROR, "You are already in a room");
+            }
+        });
+        socket.on(SharedEmitConstants.LIST_ROOM_INFOS, () => this.broadcastRoomInfos());
     }
 
+    private broadcastRoomInfos() {
+        this.io.sockets.emit(SharedEmitConstants.LIST_ROOM_INFOS, this.game.getRoomInfos());
+    }
+
+    private createRoom(user: User): boolean {
+        if (this.game.getRoomsByUserId(user.id).length !== 0) return false;
+        const room: Room = {
+            id: AppUtils.getRandomRoomId(this.game),
+            users: [user],
+        };
+        this.game.addRoom(room);
+        return true;
+    }
+
+    private joinRoom(room: Room, user: User): boolean {
+        if (this.game.getRoomsByUserId(user.id).length !== 0) return false;
+        this.game.joinRoom(room, user);
+        return true;
+    }
+
+    private registerCheckers() {
+        setInterval(() => {
+            if (this.game.deleteExpiredRooms()) {
+                this.broadcastRoomInfos();
+            }
+        }, 1000);
+    }
 }
 
 
-(new App()).init();
+new App()

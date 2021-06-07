@@ -1,11 +1,14 @@
 import {io, Socket} from "socket.io-client";
-import {SharedEmitConstants} from "../shared/shared.emit.constants";
 import {DomUtils} from "./dom.utils";
 import {RoomInfo} from "../shared/models/room.info.model";
+import {SharedEmitConstants} from "../shared/constants/shared.emit.constants";
+import {CookieUtils} from "./cookie.utils";
+import {SharedCookieConstants} from "../shared/constants/shared.cookie.constants";
 
 
 class Client {
     socket: Socket;
+    userId: string | undefined;
 
     constructor() {
         this.socket = io();
@@ -18,8 +21,7 @@ class Client {
 
     setupDOM() {
         document.querySelector('#create-room-button')?.addEventListener('click', () => {
-            const room: RoomInfo = {name: "test server" + Math.random()};
-            this.socket.emit(SharedEmitConstants.CREATE_ROOM, room);
+            this.socket.emit(SharedEmitConstants.CREATE_ROOM);
         });
         document.querySelector('#list-rooms-button')?.addEventListener('click', () => {
             this.socket.emit(SharedEmitConstants.LIST_ROOM_INFOS);
@@ -32,21 +34,48 @@ class Client {
         this.socket.on("connect", () => {
             console.log("connection");
             DomUtils.displayStatus("Connected!");
+            this.userId = CookieUtils.getCookie(SharedCookieConstants.USER_ID);
+            if (this.userId) {
+                DomUtils.displayUserIdStatus(this.userId);
+            } else {
+                DomUtils.displayUserIdStatus("Server Error: Didn't receive user id");
+            }
         });
         this.socket.on("disconnect", (message) => {
             console.log("disconnect", message);
             DomUtils.displayStatus("Disconnected :(");
         });
-        this.socket.on(SharedEmitConstants.MESSAGE, (message) => {
-            console.log(SharedEmitConstants.MESSAGE, message);
-        });
+
+        let lastTimeout = 0;
         this.socket.on(SharedEmitConstants.ERROR, (message) => {
-            console.log(SharedEmitConstants.ERROR, message);
+            clearTimeout(lastTimeout);
+            DomUtils.displayErrorStatus(message);
+            lastTimeout = window.setTimeout(() => DomUtils.displayErrorStatus(""), 3000);
         });
         this.socket.on(SharedEmitConstants.LIST_ROOM_INFOS, (roomInfos: RoomInfo[]) => {
-            console.log(SharedEmitConstants.LIST_ROOM_INFOS, roomInfos);
-            DomUtils.displayRoomInfos(roomInfos)
+            if (this.userId) {
+                DomUtils.displayRoomInfos(roomInfos, this.userId,
+                    (roomInfo) => this.onJoinRoomEventHandler(roomInfo),
+                    (roomInfo) => this.onLeaveRoomEventHandler(roomInfo));
+
+
+                const userId = this.userId;
+                const userRooms = roomInfos.filter(r => r.userIds.includes(userId));
+                    if (userRooms.length) {
+                    CookieUtils.setCookie(SharedCookieConstants.ROOM_ID, userRooms[0].id)
+                } else {
+                    CookieUtils.deleteCookie(SharedCookieConstants.ROOM_ID);
+                }
+            }
         });
+    }
+
+    onJoinRoomEventHandler(roomInfo: RoomInfo) {
+        this.socket.emit(SharedEmitConstants.JOIN_ROOM, roomInfo);
+    }
+
+    onLeaveRoomEventHandler(roomInfo: RoomInfo) {
+        this.socket.emit(SharedEmitConstants.LEAVE_ROOM, roomInfo);
     }
 }
 

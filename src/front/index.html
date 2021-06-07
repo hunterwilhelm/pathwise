@@ -21,14 +21,16 @@
 </head>
 <body>
 <h1>Status: <span id="connection-status"></span></h1>
+<h2>Error Message: <span id="error-status"></span></h2>
+<h3>User id: <span id="user-id-status"></span></h3>
 <button type="submit" id="create-room-button">Create Room</button>
 <button type="submit" id="list-rooms-button">Refresh Rooms</button>
 <br>
 <table id="list-rooms-table">
     <thead>
     <tr>
-        <th>Name</th>
         <th>Number of Players</th>
+        <th>Room Id</th>
     </tr>
     </thead>
     <tbody>

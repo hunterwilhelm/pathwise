@@ -1,5 +1,4 @@
 export interface RoomInfo {
-    name: string;
-    id?: string;
-    userCount?: number;
+    id: string;
+    userIds: string[];
 }

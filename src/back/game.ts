@@ -1,11 +1,12 @@
-import {Room} from "../shared/models/room.model";
+import {Room} from "./models/room.model";
 import {User} from "./models/user.model";
 import {Socket} from "socket.io";
 import {RoomInfo} from "../shared/models/room.info.model";
 
 export class Game {
     private rooms: Room[] = [];
-    private users: User[] = []
+    private users: User[] = [];
+    private readonly ROOM_EXPIRATION_TIME_IN_MILLISECONDS: number = 2 * 1000;
 
     constructor() {
     }
@@ -21,11 +22,16 @@ export class Game {
         }
         this.users.push(user);
         console.log("User ", userId, "joined the game");
-        console.log("There are", this.users.length, "here")
+        console.log("There", this.users.length === 1 ? "is" : "are", this.users.length, "here");
+
+        return user;
     }
 
-    removeUser(userId: string) {
+    logoutUser(userId: string) {
         this.users = this.users.filter(u => u.id != userId);
+        this.getRoomsByUserId(userId).forEach(r => {
+            this.leaveRoom(r.id, userId)
+        })
     }
 
     addRoom(room: Room) {
@@ -35,11 +41,50 @@ export class Game {
     getRoomInfos(): RoomInfo[] {
         return this.rooms.map(r => {
             const roomInfo: RoomInfo = {
-                name: r.name,
-                userCount: r.users.length,
+                userIds: r.users.map(u => u.id),
                 id: r.id
             }
             return roomInfo;
         });
+    }
+
+    getRoomsByUserId(userId: string): RoomInfo[] {
+        return this.rooms
+            .filter(r => r.users.some(u => u.id === userId))
+            .map(r => {
+                const roomInfo: RoomInfo = {
+                    userIds: r.users.map(u => u.id),
+                    id: r.id
+                }
+                return roomInfo;
+            });
+    }
+
+    getRoomById(roomId: string): Room | undefined {
+        const foundRooms = this.rooms.filter(r => r.id == roomId);
+        if (foundRooms.length) return foundRooms[0];
+        return undefined;
+    }
+
+    joinRoom(room: Room, user: User) {
+        room.users.push(user);
+        room.roomEmptySince = undefined;
+    }
+
+    leaveRoom(roomId: string, userId: string) {
+        this.rooms.forEach(r => {
+            r.users = r.users.filter(u => u.id !== userId)
+            if (r.users.length === 0) {
+                r.roomEmptySince = new Date();
+            }
+        });
+    }
+
+    deleteExpiredRooms(): boolean {
+        const roomCount = this.rooms.length;
+        this.rooms = this.rooms.filter(r =>
+            !(r.roomEmptySince && (new Date().getTime() - r.roomEmptySince.getTime() >= this.ROOM_EXPIRATION_TIME_IN_MILLISECONDS))
+        );
+        return roomCount !== this.rooms.length;
     }
 }
