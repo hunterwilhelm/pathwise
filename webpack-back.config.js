@@ -5,7 +5,7 @@ module.exports = {
   target: "node",
   mode: "development",
   entry: {
-    app: ["./src/back/app.ts"]
+    app: ["./src/back/sketch.app.ts"]
   },
   module: {
     rules: [

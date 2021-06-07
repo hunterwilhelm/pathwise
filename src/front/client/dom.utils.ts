@@ -1,4 +1,4 @@
-import {RoomInfo} from "../shared/models/room.info.model";
+import {RoomInfo} from "../../shared/models/room.info.model";
 
 type RoomInfoCallback = (roomInfo: RoomInfo) => void;
 type VoidCallback = () => void;

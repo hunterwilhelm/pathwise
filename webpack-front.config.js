@@ -1,4 +1,5 @@
 const path = require('path');
+const CopyPlugin = require("copy-webpack-plugin");
 
 module.exports = {
   entry: "./src/front/index.ts",
@@ -18,5 +19,12 @@ module.exports = {
   },
   resolve: {
     extensions: ['.ts', '.js', '.json']
-  }
+  },
+  plugins: [
+    new CopyPlugin({
+      patterns: [
+        { from: "static", to: "" },
+      ],
+    }),
+  ],
 }
