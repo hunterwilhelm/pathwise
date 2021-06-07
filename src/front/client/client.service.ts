@@ -4,17 +4,15 @@ import {RoomInfo} from "../../shared/models/room.info.model";
 import {SharedEmitConstants} from "../../shared/constants/shared.emit.constants";
 import {CookieUtils} from "./cookie.utils";
 import {SharedCookieConstants} from "../../shared/constants/shared.cookie.constants";
-
-export type BooleanEventHandler = (userInRoom: boolean) => void;
+// @ts-ignore
+import {BehaviorSubject, Observable} from "rxjs";
 
 export class ClientService {
     socket: Socket;
     userId: string | undefined;
 
-    private userInRoom: boolean = false;
-    private userInRoomListeners: BooleanEventHandler[] = [];
-    private opponentInRoom: boolean = false;
-    private opponentInRoomListeners: BooleanEventHandler[] = [];
+    private $userInRoom = new BehaviorSubject<boolean>(false);
+    private $opponentInRoom = new BehaviorSubject<boolean>(false);
 
     constructor() {
         this.socket = io();
@@ -68,14 +66,14 @@ export class ClientService {
             if (this.userId) {
                 const userId = this.userId;
                 const userRooms = roomInfos.filter(r => r.userIds.includes(userId));
-                this.setUserInRoom(userRooms.length > 0);
-                this.setOpponentInRoom(userRooms.every(r=> {
+                this.$userInRoom.next(userRooms.length > 0);
+                this.$opponentInRoom.next(userRooms.every(r => {
                     return r.userIds.length > 1
                 }));
 
                 DomUtils.displayRoomInfos(
                     roomInfos,
-                    this.userInRoom,
+                    this.$userInRoom.value,
                     this.userId,
                     (roomInfo) => this.onJoinRoomEventHandler(roomInfo),
                     (roomInfo) => this.onLeaveRoomEventHandler(roomInfo),
@@ -110,26 +108,12 @@ export class ClientService {
         this.socket.emit(SharedEmitConstants.GAME_MESSAGE, "hello");
     }
 
-    subscribeToUserInRoom(ev: BooleanEventHandler) {
-        this.userInRoomListeners.push(ev);
+    getUserInRoomObservable(): Observable<boolean> {
+        return this.$userInRoom.asObservable();
     }
 
-    setUserInRoom(value: boolean) {
-        this.userInRoom = value;
-        this.userInRoomListeners.forEach(eventHandler => {
-            eventHandler(value);
-        })
-    }
-
-    subscribeToOpponentInRoom(ev: BooleanEventHandler) {
-        this.opponentInRoomListeners.push(ev);
-    }
-
-    setOpponentInRoom(value: boolean) {
-        this.opponentInRoom = value;
-        this.opponentInRoomListeners.forEach(eventHandler => {
-            eventHandler(value);
-        })
+    getOpponentInRoomObservable(): Observable<boolean> {
+        return this.$opponentInRoom.asObservable();
     }
 
 

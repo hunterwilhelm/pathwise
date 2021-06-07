@@ -63,10 +63,10 @@ export class SketchApp {
     }
 
     private registerClientListeners() {
-        this.client.subscribeToUserInRoom((value: boolean) => {
+        this.client.getUserInRoomObservable().subscribe((value: boolean) => {
             this.userInRoom = value;
         });
-        this.client.subscribeToOpponentInRoom((value: boolean) => {
+        this.client.getOpponentInRoomObservable().subscribe((value: boolean) => {
             this.opponentInRoom = value;
         })
     }
