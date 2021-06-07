@@ -62,7 +62,7 @@ export class SketchApp {
 
     setup() {
         this.p.textFont(this.comicFont, 48);
-        this.p.createCanvas(this.p.windowWidth, this.p.windowHeight);
+        this.p.createCanvas(952 + 20, 720 + 20);
         this.points = this.getService.getPoints();
         this.turns = this.getService.getTurns();
         this.matrix = this.getService.getAdjacencyMatrix();
