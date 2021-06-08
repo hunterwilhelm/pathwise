@@ -3,9 +3,10 @@ import {LogicService} from "./logic.service";
 import {GetService} from "./get.service";
 import {Turn} from "./models/turn.model";
 import {EdgeSet} from "./models/edge-set.model";
-import {Point} from "./models/point.model";
+import {Point} from "../../shared/models/point.model";
 import {DisplayService} from "./display.service";
 import {ClientService} from "../client/client.service";
+import {SharedGameUtils} from "../../shared/shared.game.utils";
 
 export class SketchApp {
     p: p5;
@@ -72,7 +73,7 @@ export class SketchApp {
     }
 
 
-    w = 30;
+    tileWidth = 30;
     myScale = 1;
 
 
@@ -86,11 +87,11 @@ export class SketchApp {
         });
 
         this.p.textFont(this.comicFont, 48);
-        this.points = this.getService.getPoints();
+        this.points = SharedGameUtils.getPoints(this.p.width, this.p.height, this.tileWidth);
         this.turns = this.getService.getTurns();
-        this.matrix = this.getService.getAdjacencyMatrix();
-        this.edgeIndexes = this.getService.getEdgeIndexes();
-        this.borderIndexes = this.getService.getBorderIndexes();
+        this.matrix = SharedGameUtils.getAdjacencyMatrix(this.points, this.tileWidth);
+        this.edgeIndexes = SharedGameUtils.getEdgeIndexes();
+        this.borderIndexes = SharedGameUtils.getBorderIndexes(this.points);
         this.turn = 0;
         this.started = false;
         this.won = false;

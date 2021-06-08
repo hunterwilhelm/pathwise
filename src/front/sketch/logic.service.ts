@@ -2,7 +2,7 @@ import {SketchApp} from "./sketch.app";
 import p5 from "p5";
 import {Utils} from "./utils";
 import {EdgeSet} from "./models/edge-set.model";
-import {Point} from "./models/point.model";
+import {Point} from "../../shared/models/point.model";
 
 export class LogicService {
     private app: SketchApp;

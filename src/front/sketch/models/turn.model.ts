@@ -1,5 +1,5 @@
 import p5, { Graphics, Image } from "p5";
-import {Point} from "./point.model";
+import {Point} from "../../../shared/models/point.model";
 
 export interface Turn {
     speechPos: Point;

@@ -32,7 +32,7 @@ export class DisplayService {
 
         this.app.points.forEach((p, i) => {
             if (closestIndex === i) {
-                this.p.image(this.app.turns[this.app.turn].img, p.x, p.y, this.app.w*2, this.app.w*2);
+                this.p.image(this.app.turns[this.app.turn].img, p.x, p.y, this.app.tileWidth*2, this.app.tileWidth*2);
                 this.p.fill(this.app.turns[this.app.turn].color);
                 this.p.stroke(100);
                 this.p.strokeWeight(1);
@@ -47,9 +47,9 @@ export class DisplayService {
 
             this.p.imageMode(this.p.CENTER);
             if (p.img) {
-                this.p.image(p.img, p.x, p.y, this.app.w*2, this.app.w*2);
+                this.p.image(p.img, p.x, p.y, this.app.tileWidth*2, this.app.tileWidth*2);
             } else {
-                this.p.image(this.app.imgStar1, p.x, p.y, this.app.w*2, this.app.w*2);
+                this.p.image(this.app.imgStar1, p.x, p.y, this.app.tileWidth*2, this.app.tileWidth*2);
             }
             // fill(0);
             // noStroke();

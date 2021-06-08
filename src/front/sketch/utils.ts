@@ -1,4 +1,4 @@
-import { Point } from "./models/point.model";
+import { Point } from "../../shared/models/point.model";
 
 export class Utils {
     static findClosestPointIndex(points: Point[], x: number, y: number): number | undefined {
@@ -16,14 +16,5 @@ export class Utils {
             if (points[closestIndex].border) return undefined;
         }
         return closestIndex;
-    }
-
-
-    static sideLengthOfPolygon(radius: number, npoints: number): number{
-        return 2 * radius * Math.sin(Math.PI / npoints);
-    }
-
-    static apothemOfPolygon(radius: number, npoints: number): number {
-        return radius * Math.cos(Math.PI / npoints);
     }
 }
