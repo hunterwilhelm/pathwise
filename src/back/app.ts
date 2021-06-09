@@ -4,10 +4,9 @@ import {Server as ServerIO, Socket} from "socket.io";
 import cookieParser from "cookie-parser";
 import {Server} from "http";
 import {AppUtils} from "./app.utils";
-import {GameDataService} from "./game.data.service";
+import {AppDataService} from "./app.data.service";
 import {SharedCookieConstants} from "../shared/constants/shared.cookie.constants";
-import {GameLogicService} from "./game.logic.service";
-import {GameSocketService} from "./game.socket.service";
+import {UserSocketService} from "./user.socket.service";
 
 const PORT = process.env.PORT || 3000;
 const INDEX = './front/index.html';
@@ -16,18 +15,17 @@ export class App {
     private readonly app: Express;
     private readonly server: Server;
     readonly io: ServerIO;
-    readonly dataService: GameDataService;
-    readonly socketService: GameSocketService;
-    readonly logicService: GameLogicService;
+    readonly dataService: AppDataService;
+    readonly socketService: UserSocketService;
 
     constructor() {
         this.app = express();
         this.server = require('http').createServer(this.app);
         this.io = require('socket.io')(this.server);
-        this.dataService = new GameDataService();
-        this.logicService = new GameLogicService(this);
-        this.socketService = new GameSocketService(this);
+        this.dataService = new AppDataService();
+        this.socketService = new UserSocketService(this);
         this.init();
+
     }
 
 
@@ -50,7 +48,7 @@ export class App {
     private registerListeners() {
         this.server.listen(PORT, App.onStartEventHandler);
         this.io.on("connection", (socket: Socket) => {
-            this.socketService.onSocketConnectionEventHandler(socket)
+            this.socketService.onSocketConnectionEventHandler(socket);
         });
     }
 

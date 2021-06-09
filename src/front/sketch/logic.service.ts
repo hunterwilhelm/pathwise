@@ -1,7 +1,6 @@
 import {SketchApp} from "./sketch.app";
 import p5 from "p5";
-import {Utils} from "./utils";
-import {EdgeSet} from "./models/edge-set.model";
+import {EdgeSet} from "../../shared/models/edge-set.model";
 import {Point} from "../../shared/models/point.model";
 
 export class LogicService {
@@ -14,13 +13,12 @@ export class LogicService {
     }
 
     clickClosestPoint() {
-        const closestIndex = Utils.findClosestPointIndex(this.app.points, this.p.mouseX, this.p.mouseY);
-        if (closestIndex !== undefined) {
-            this.app.points[closestIndex].color = this.app.turns[this.app.turn].color;
-            this.app.points[closestIndex].img = this.app.turns[this.app.turn].img;
-            this.app.points[closestIndex].turn = this.app.turn;
-        }
-        return closestIndex !== undefined;
+        // if (closestIndex !== undefined) {
+        //     this.app.points[closestIndex].color = this.app.turns[this.app.turn].color;
+        //     this.app.points[closestIndex].img = this.app.turns[this.app.turn].img;
+        //     this.app.points[closestIndex].turn = this.app.turn;
+        // }
+        // return closestIndex !== undefined;
     }
 
     switchTurn() {

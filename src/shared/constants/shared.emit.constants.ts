@@ -1,14 +1,15 @@
-export abstract class SharedEmitConstants {
+export enum SharedEmitConstants {
     // game
-    static readonly GAME_MESSAGE: string = 'GAME_MESSAGE';
+    GAME_MESSAGE,
 
     // rooms
-    static readonly ROOM_CREATE: string = 'ROOM_CREATE';
-    static readonly ROOM_JOIN: string = 'ROOM_JOIN';
-    static readonly ROOM_LEAVE: string = 'ROOM_LEAVE';
-    static readonly ROOM_LIST_INFOS: string = 'ROOM_LIST_INFOS';
+    ROOM_CREATE,
+    ROOM_JOIN,
+    ROOM_LEAVE,
+    ROOM_LIST_INFOS,
+    GAME_CLICKED_POINT_INDEX,
 
     // system
-    static readonly USER_INFO: string = 'USER_INFO';
-    static readonly ERROR: string = 'ERROR';
+    USER_INFO,
+    ERROR,
 }

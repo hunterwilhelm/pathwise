@@ -2,15 +2,21 @@ import p5, {Image} from "p5";
 import {LogicService} from "./logic.service";
 import {GetService} from "./get.service";
 import {Turn} from "./models/turn.model";
-import {EdgeSet} from "./models/edge-set.model";
+import {EdgeSet} from "../../shared/models/edge-set.model";
 import {Point} from "../../shared/models/point.model";
 import {DisplayService} from "./display.service";
 import {ClientService} from "../client/client.service";
 import {SharedGameUtils} from "../../shared/shared.game.utils";
+import {Utils} from "./utils";
+import {SharedGameConstants} from "../../shared/constants/shared.game.constants";
 
 export class SketchApp {
     p: p5;
     client: ClientService;
+
+
+    tileWidth = SharedGameConstants.TILE_WIDTH;
+    myScale = SharedGameConstants.SCALE;
 
     logicService: LogicService;
     getService: GetService;
@@ -73,15 +79,10 @@ export class SketchApp {
     }
 
 
-    tileWidth = 30;
-    myScale = 1;
-
-
     setup() {
-        const canvas = this.p.createCanvas(952 + 20, 720 + 20);
+        const canvas = this.p.createCanvas(SharedGameConstants.CANVAS_WIDTH, SharedGameConstants.CANVAS_HEIGHT);
         canvas.mouseClicked(() => {
             this.mouseClicked()
-
             // prevent default
             return false;
         });
@@ -131,12 +132,16 @@ export class SketchApp {
             this.logicService.reset();
             return;
         }
-        if (this.logicService.clickClosestPoint()) {
-            if (this.logicService.isThereAPath(this.turn, this.points, this.edgeIndexes, this.borderIndexes, this.matrix)) {
-                this.logicService.winGame();
-            } else {
-                this.logicService.switchTurn();
-            }
+        const closestIndex = Utils.findClosestPointIndex(this.points, this.p.mouseX, this.p.mouseY);
+        if (closestIndex !== undefined) {
+            this.client.onPointIndexClicked(closestIndex);
         }
+        // if (this.logicService.clickClosestPoint()) {
+        //     if (this.logicService.isThereAPath(this.turn, this.points, this.edgeIndexes, this.borderIndexes, this.matrix)) {
+        //         this.logicService.winGame();
+        //     } else {
+        //         this.logicService.switchTurn();
+        //     }
+        // }
     }
 }

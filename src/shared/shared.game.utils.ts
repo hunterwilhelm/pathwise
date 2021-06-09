@@ -1,5 +1,5 @@
 import {Point} from "./models/point.model";
-import {EdgeSet} from "../front/sketch/models/edge-set.model";
+import {EdgeSet} from "./models/edge-set.model";
 
 export class SharedGameUtils {
     static getPoints(width: number, height: number, tileWidth: number): Point[] {
@@ -29,7 +29,7 @@ export class SharedGameUtils {
         return radius * Math.cos(Math.PI / npoints);
     }
 
-    static getAdjacencyMatrix(points: Point[], tileWidth: number): number[][] {
+    static getAdjacencyMatrix(points: readonly Point[], tileWidth: number): number[][] {
         let matrix: number[][] = [];
         let helperRowOfZeros = Array.from({length: points.length}, () => 0);
         helperRowOfZeros.forEach(() => {
@@ -49,7 +49,7 @@ export class SharedGameUtils {
         return matrix;
     }
 
-    static getBorderIndexes(points: Point[]): number[] {
+    static getBorderIndexes(points: readonly Point[]): number[] {
         return points.reduce((filtered: number[], p: Point, i: number) => {
             if (p.border) {
                 filtered.push(i);

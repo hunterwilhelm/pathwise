@@ -1,9 +1,6 @@
 import {SketchApp} from "./sketch.app";
 import p5 from "p5";
-import {Utils} from "./utils";
-import { Turn } from "./models/turn.model";
-import {EdgeSet} from "./models/edge-set.model";
-import {Point} from "../../shared/models/point.model";
+import {Turn} from "./models/turn.model";
 
 export class GetService {
 

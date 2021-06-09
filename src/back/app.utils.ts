@@ -1,8 +1,6 @@
 import cookie from "cookie";
 import {Socket} from "socket.io";
-import {GameDataService} from "./game.data.service";
-import {RoomInfo} from "../shared/models/room.info.model";
-import {Room} from "./models/room.model";
+import {AppDataService} from "./app.data.service";
 
 export class AppUtils {
     private static generateRandomString(chars: string, len: number) {
@@ -17,7 +15,7 @@ export class AppUtils {
         return AppUtils.generateRandomString('0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ', 32);
     }
 
-    static getRandomRoomId(game: GameDataService): string {
+    static getRandomRoomId(game: AppDataService): string {
         do {
             const id = AppUtils.generateRandomString('0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ', 4);
             if (!game.getRoomById(id)) {
@@ -38,7 +36,7 @@ export class AppUtils {
         return undefined;
     }
 
-    static removeAndDisconnectUsersByIdFromGame(game: GameDataService, userId: string) {
+    static removeAndDisconnectUsersByIdFromGame(game: AppDataService, userId: string) {
         const onlineUsersSameId = game.getUsersById(userId);
         if (onlineUsersSameId.length > 0) {
             console.log("Trying to remove users with the same id", onlineUsersSameId.length)
@@ -58,15 +56,5 @@ export class AppUtils {
         return sanitized.length > length ?
             sanitized.substring(0, length - 3) + "..." :
             sanitized;
-    }
-
-    static convertRoomsToRoomInfos(rooms: Room[]): RoomInfo[] {
-        return rooms.map(r => {
-            const roomInfo: RoomInfo = {
-                userIds: r.users.map(u => u.id),
-                id: r.id
-            }
-            return roomInfo;
-        });
     }
 }

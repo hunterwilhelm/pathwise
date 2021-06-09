@@ -28,10 +28,10 @@ export class ClientService {
 
     setupDOM() {
         document.querySelector('#create-room-button')?.addEventListener('click', () => {
-            this.socket.emit(SharedEmitConstants.ROOM_CREATE);
+            this.socket.emit(SharedEmitConstants.ROOM_CREATE.toString());
         });
         document.querySelector('#list-rooms-button')?.addEventListener('click', () => {
-            this.socket.emit(SharedEmitConstants.ROOM_LIST_INFOS);
+            this.socket.emit(SharedEmitConstants.ROOM_LIST_INFOS.toString());
         });
         DomUtils.displayStatus("Connecting...");
     }
@@ -54,7 +54,7 @@ export class ClientService {
         });
 
         let lastTimeout = 0;
-        this.socket.on(SharedEmitConstants.ERROR, (message) => {
+        this.socket.on(SharedEmitConstants.ERROR.toString(), (message) => {
             clearTimeout(lastTimeout);
             DomUtils.displayErrorStatus(message);
             lastTimeout = window.setTimeout(() => DomUtils.displayErrorStatus(""), 3000);
@@ -62,7 +62,7 @@ export class ClientService {
     }
 
     registerRoomListeners() {
-        this.socket.on(SharedEmitConstants.ROOM_LIST_INFOS, (roomInfos: RoomInfo[]) => {
+        this.socket.on(SharedEmitConstants.ROOM_LIST_INFOS.toString(), (roomInfos: RoomInfo[]) => {
             if (this.userId) {
                 const userId = this.userId;
                 const userRooms = roomInfos.filter(r => r.userIds.includes(userId));
@@ -91,21 +91,21 @@ export class ClientService {
     }
 
     registerGameListeners() {
-        this.socket.on(SharedEmitConstants.GAME_MESSAGE, (message: string) => {
+        this.socket.on(SharedEmitConstants.GAME_MESSAGE.toString(), (message: string) => {
             alert(message);
         })
     }
 
     onJoinRoomEventHandler(roomInfo: RoomInfo) {
-        this.socket.emit(SharedEmitConstants.ROOM_JOIN, roomInfo);
+        this.socket.emit(SharedEmitConstants.ROOM_JOIN.toString(), roomInfo);
     }
 
     onLeaveRoomEventHandler(roomInfo: RoomInfo) {
-        this.socket.emit(SharedEmitConstants.ROOM_LEAVE, roomInfo);
+        this.socket.emit(SharedEmitConstants.ROOM_LEAVE.toString(), roomInfo);
     }
 
     sendMessage() {
-        this.socket.emit(SharedEmitConstants.GAME_MESSAGE, "hello");
+        this.socket.emit(SharedEmitConstants.GAME_MESSAGE.toString(), "hello");
     }
 
     getUserInRoomObservable(): Observable<boolean> {
@@ -116,5 +116,7 @@ export class ClientService {
         return this.$opponentInRoom.asObservable();
     }
 
-
+    onPointIndexClicked(pointIndex: number) {
+        this.socket.emit(SharedEmitConstants.GAME_CLICKED_POINT_INDEX.toString(), pointIndex);
+    }
 }
