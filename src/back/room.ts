@@ -11,7 +11,7 @@ import {SharedDataUtils} from "../shared/shared.data.utils";
 import {SharedGameUtils} from "../shared/shared.game.utils";
 
 export class Room {
-    private readonly ROOM_EXPIRATION_TIME_IN_MILLISECONDS: number = 5 * 1000;
+    private readonly ROOM_EXPIRATION_TIME_IN_MILLISECONDS: number = 2 * 1000;
 
     private socketService: RoomSocketService;
 
@@ -39,7 +39,7 @@ export class Room {
         this.socketService = new RoomSocketService(this);
 
         this.id = AppUtils.getRandomRoomId(app.dataService);
-        this.points = [...app.dataService.points];
+        this.points = app.dataService.points.map(a => Object.assign({}, a));
         this.matrix = app.dataService.matrix;
         this.edgeIndexes = app.dataService.edgeIndexes;
         this.borderIndexes = app.dataService.borderIndexes;
@@ -62,7 +62,7 @@ export class Room {
     get isExpired(): boolean {
         if (this.roomEmptySince) {
             const timeElapsed = new Date().getTime() - this.roomEmptySince.getTime();
-            return timeElapsed < this.ROOM_EXPIRATION_TIME_IN_MILLISECONDS;
+            return timeElapsed > this.ROOM_EXPIRATION_TIME_IN_MILLISECONDS;
         }
         return false;
     }

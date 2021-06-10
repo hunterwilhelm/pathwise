@@ -57,7 +57,7 @@ export class App {
             if (this.dataService.deleteExpiredRooms()) {
                 this.socketService.broadcastRoomInfos();
             }
-        }, 1000);
+        }, 500);
     }
 
     private static onStartEventHandler() {

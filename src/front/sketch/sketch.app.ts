@@ -83,6 +83,7 @@ export class SketchApp {
                     .forEach((v, i) => {
                         if (i < this.points.length) {
                             this.points[i].turn = v;
+                            if (v != undefined) this.started = true;
                         }
                     });
                 this.turn = gameData.turn;

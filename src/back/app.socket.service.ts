@@ -63,13 +63,18 @@ export class AppSocketService {
             const room = this.app.dataService.getRoomById(roomInfo.id);
             if (!room) {
                 socket.emit(SharedEmitConstants.ROOM_ERROR.toString(), "That room does not exist");
-            } else {
-                if (!room.joinRoom(user)) {
-                    socket.emit(SharedEmitConstants.ROOM_ERROR.toString(), "You are already in a different room");
-                } else {
-                    this.broadcastRoomInfos();
-                }
+                return;
             }
+            if (this.app.dataService.getRoomInfosByUserId(user.id).length !== 0) {
+                socket.emit(SharedEmitConstants.ROOM_ERROR.toString(), "You are already in a room");
+                return;
+            }
+            if (!room.joinRoom(user)) {
+                socket.emit(SharedEmitConstants.ROOM_ERROR.toString(), "That room is full");
+                return;
+            }
+            this.broadcastRoomInfos();
+
         });
         socket.on(SharedEmitConstants.ROOM_LEAVE.toString(), (roomInfo: RoomInfo) => {
             const room = this.app.dataService.getRoomById(roomInfo.id);

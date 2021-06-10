@@ -3,8 +3,16 @@ import {RoomInfo} from "../../shared/models/room.info.model";
 type RoomInfoCallback = (roomInfo: RoomInfo) => void;
 
 export class DomUtils {
-    static displayStatus(message: string) {
-        document.title = message;
+    static displayConnectionStatus(message: string) {
+        document.title = message + " - Pathwise Online Multiplayer";
+        const connectionStatus = document.querySelector('#connection-status');
+        if (connectionStatus) {
+            connectionStatus.innerHTML = " - " + message;
+        }
+    }
+
+    static displayBodyBackground(hexColor: string) {
+        document.body.style.background = hexColor;
     }
 
     static displayRoomInfos(roomInfos: RoomInfo[], userInRoom: boolean, userId: string, joinRoomCallback: RoomInfoCallback, leaveRoomCallback: RoomInfoCallback) {
@@ -35,11 +43,20 @@ export class DomUtils {
                     button.textContent = "Join Room";
                     button.className = "btn btn-success";
                     button.type = 'submit';
-                    if (userInRoom) button.disabled = true;
-                    button.addEventListener("click", () => {
-                        joinRoomCallback(r)
-                    }, false);
-                    action.appendChild(button);
+                    if (userInRoom) {
+                        button.classList.add('disabled');
+                        const container = document.createElement("div");
+                        container.addEventListener("click", () => {
+                            joinRoomCallback(r)
+                        }, false);
+                        container.appendChild(button);
+                        action.appendChild(container);
+                    } else {
+                        button.addEventListener("click", () => {
+                            joinRoomCallback(r)
+                        }, false);
+                        action.appendChild(button);
+                    }
                 }
 
                 tr.appendChild(users);

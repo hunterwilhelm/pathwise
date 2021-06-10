@@ -36,17 +36,20 @@ export class ClientService {
         document.querySelector('#list-rooms-button')?.addEventListener('click', () => {
             this.socket.emit(SharedEmitConstants.ROOM_LIST_INFOS.toString());
         });
-        DomUtils.displayStatus("Connecting...");
+        DomUtils.displayConnectionStatus("Connecting...");
+        DomUtils.displayBodyBackground("#E2E3E5");
     }
 
 
     registerConnectionListeners() {
         this.socket.on("connect", () => {
-            DomUtils.displayStatus("Connected! - Pathwise Online Multiplayer");
+            DomUtils.displayConnectionStatus("Connected");
+            DomUtils.displayBodyBackground("#D4EDDA");
             this.userId = CookieUtils.getCookie(SharedCookieConstants.USER_ID);
         });
         this.socket.on("disconnect", () => {
-            DomUtils.displayStatus("Disconnected - Pathwise Online Multiplayer");
+            DomUtils.displayConnectionStatus("Disconnected");
+            DomUtils.displayBodyBackground("#F8D7DB");
         });
         this.socket.on(SharedEmitConstants.GAME_ERROR.toString(), (message) => {
             this.$gameErrorMessage.next(message);

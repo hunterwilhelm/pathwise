@@ -33,7 +33,7 @@ export class SharedGameUtils {
         let matrix: number[][] = [];
         let helperRowOfZeros = Array.from({length: points.length}, () => 0);
         helperRowOfZeros.forEach(() => {
-            matrix.push(helperRowOfZeros);
+            matrix.push(Array.from(helperRowOfZeros));
         });
         const W = Math.pow(tileWidth * 2, 2);
         points.forEach((p1: Point, i1: number) => {

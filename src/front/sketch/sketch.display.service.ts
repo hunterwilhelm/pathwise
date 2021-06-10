@@ -161,7 +161,7 @@ export class SketchDisplayService {
 
     displayGameJoinRoomInstructions() {
         this.displayMainScreen();
-        this.displayPrimaryInstructions("Please join a room to begin.");
+        this.displayPrimaryInstructions("Please join or create a room below to begin.");
     }
 
     displayWinScreen(opponentRequestedRematch: boolean = false) {
