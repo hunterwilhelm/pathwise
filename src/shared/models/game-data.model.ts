@@ -4,4 +4,6 @@ export interface GameData {
     turnListCompressed: TurnListCompressed;
     turn: number;
     turnUserId: string | undefined;
+    wonUserId: string | undefined;
+    requestedRematchUserId: string | undefined;
 }

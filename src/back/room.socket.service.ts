@@ -10,8 +10,8 @@ export class RoomSocketService {
     }
 
 
-    sendErrorMessage(user: User, message: string) {
-        user.socket.emit(SharedEmitConstants.ERROR.toString(), message);
+    sendErrorMessage(user: User | undefined, message: string) {
+        user?.socket.emit(SharedEmitConstants.ERROR.toString(), message);
     }
 
     sendGameData() {

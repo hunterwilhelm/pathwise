@@ -1,8 +1,8 @@
 import {SketchApp} from "./sketch.app";
 import p5 from "p5";
-import {Utils} from "./utils";
+import {SketchUtils} from "./sketch.utils";
 
-export class DisplayService {
+export class SketchDisplayService {
 
     private app: SketchApp;
     private p: p5;
@@ -27,7 +27,7 @@ export class DisplayService {
     }
 
     displayBoard() {
-        let closestIndex = Utils.findClosestPointIndex(this.app.points, this.p.mouseX, this.p.mouseY);
+        let closestIndex = SketchUtils.findClosestPointIndex(this.app.points, this.p.mouseX, this.p.mouseY);
         if (this.app.won) closestIndex = undefined;
 
         this.app.points.forEach((p, i) => {
@@ -74,9 +74,10 @@ export class DisplayService {
         this.p.noStroke();
         this.p.textAlign(this.p.CENTER, this.p.CENTER);
         const turnName = this.app.turns[this.app.turn].name;
-        const possession = this.app.isUsersTurn ? "Your" : "Opponent's";
-        const status = this.app.won ? "won!" : "turn";
-        this.p.text(`${turnName}: ${possession} ${status}`, X, Y - 5);
+        const subject = this.app.isUsersTurn ? "You" : "Opponent";
+        const possessive = this.app.isUsersTurn ? "r" : "'s";
+        const status = this.app.won ? " won!" : `${possessive} turn`;
+        this.p.text(`${turnName}: ${subject}${status}`, X, Y - 5);
 
         // speech bubbles
         if (!this.app.won) {
@@ -133,6 +134,11 @@ export class DisplayService {
         this.p.text("Press anywhere to begin", this.p.width / 2, this.p.height / 2 + 200);
     }
 
+    displayGameAwaitingRematchInstructions() {
+        this.displayMainScreen();
+        this.displayPrimaryInstructions("Waiting for your opponent to agree to a rematch...");
+    }
+
     displayGameWaitingRoomInstructions() {
         this.displayMainScreen();
         this.displayPrimaryInstructions("Waiting for another user to join...");
@@ -144,7 +150,7 @@ export class DisplayService {
         this.displayPrimaryInstructions("Please join a room to begin.");
     }
 
-    displayWinScreen() {
+    displayWinScreen(opponentRequestedRematch: boolean = false) {
         let drawText = () => {
             this.p.textSize(30);
             this.p.fill(this.app.turns[this.app.turn].color);
@@ -155,7 +161,8 @@ export class DisplayService {
             this.p.fill(0);
             this.p.stroke(255);
             this.p.strokeWeight(6);
-            this.p.text('CLICK ANYWHERE TO RESTART THE GAME', this.p.width / 2, this.p.height / 2 + 50);
+            const prefix = opponentRequestedRematch ? "YOUR OPPONENT HAS REQUESTED A REMATCH\n" : "";
+            this.p.text(prefix + 'CLICK TO REQUEST A REMATCH', this.p.width / 2, this.p.height / 2 + 50);
         }
 
         this.p.push();

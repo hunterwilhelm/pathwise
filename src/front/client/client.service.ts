@@ -11,6 +11,7 @@ import {GameData} from "../../shared/models/game-data.model";
 export class ClientService {
     socket: Socket;
     userId: string | undefined;
+    lastTimeout: number = 0;
 
     private $userInRoom = new BehaviorSubject<boolean>(false);
     private $opponentInRoom = new BehaviorSubject<boolean>(false);
@@ -55,11 +56,8 @@ export class ClientService {
             DomUtils.displayStatus("Disconnected :(");
         });
 
-        let lastTimeout = 0;
         this.socket.on(SharedEmitConstants.ERROR.toString(), (message) => {
-            clearTimeout(lastTimeout);
-            DomUtils.displayErrorStatus(message);
-            lastTimeout = window.setTimeout(() => DomUtils.displayErrorStatus(""), 3000);
+            this.lastTimeout = DomUtils.displayErrorStatus(message, this.lastTimeout);
         });
     }
 
@@ -127,5 +125,13 @@ export class ClientService {
 
     onPointIndexClicked(pointIndex: number) {
         this.socket.emit(SharedEmitConstants.GAME_CLICKED_POINT_INDEX.toString(), pointIndex);
+    }
+
+    onRematchRequested() {
+        this.socket.emit(SharedEmitConstants.GAME_REQUEST_REMATCH.toString());
+    }
+
+    onRematchAccepted() {
+        this.socket.emit(SharedEmitConstants.GAME_REQUEST_REMATCH.toString());
     }
 }

@@ -8,7 +8,7 @@ import {SharedCookieConstants} from "../shared/constants/shared.cookie.constants
 import {App} from "./app";
 import {Room} from "./room";
 
-export class UserSocketService {
+export class AppSocketService {
     app: App;
 
     constructor(app: App) {
@@ -99,6 +99,12 @@ export class UserSocketService {
             const userRoom = this.app.dataService.getRoomByUserId(user.id);
             if (userRoom) {
                 userRoom.onPointIndexClickedEventHandler(user.id, pointIndex);
+            }
+        });
+        socket.on(SharedEmitConstants.GAME_REQUEST_REMATCH.toString(), () => {
+            const userRoom = this.app.dataService.getRoomByUserId(user.id);
+            if (userRoom) {
+                userRoom.onRematchRequestEventHandler(user.id);
             }
         });
     }

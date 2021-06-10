@@ -1,13 +1,11 @@
 import p5, {Image} from "p5";
-import {LogicService} from "./logic.service";
-import {GetService} from "./get.service";
 import {Turn} from "./models/turn.model";
 import {EdgeSet} from "../../shared/models/edge-set.model";
 import {Point} from "../../shared/models/point.model";
-import {DisplayService} from "./display.service";
+import {SketchDisplayService} from "./sketch.display.service";
 import {ClientService} from "../client/client.service";
 import {SharedGameUtils} from "../../shared/shared.game.utils";
-import {Utils} from "./utils";
+import {SketchUtils} from "./sketch.utils";
 import {SharedGameConstants} from "../../shared/constants/shared.game.constants";
 import {GameData} from "../../shared/models/game-data.model";
 import {SharedDataUtils} from "../../shared/shared.data.utils";
@@ -21,9 +19,7 @@ export class SketchApp {
     tileWidth = SharedGameConstants.TILE_WIDTH;
     myScale = SharedGameConstants.SCALE;
 
-    logicService: LogicService;
-    getService: GetService;
-    displayService: DisplayService;
+    displayService: SketchDisplayService;
 
     imgBackground: Image;
     imgStar1: Image;
@@ -43,6 +39,8 @@ export class SketchApp {
     private userInRoom: boolean = false;
     private opponentInRoom: boolean = false;
     isUsersTurn: boolean = false;
+    private rematchRequestSent: boolean = false;
+    private requestedRematchUserId?: string;
 
     constructor(p: p5, client: ClientService) {
         this.p = p;
@@ -66,9 +64,7 @@ export class SketchApp {
         this.started = false;
         this.won = false;
 
-        this.logicService = new LogicService(p, this);
-        this.getService = new GetService(p, this);
-        this.displayService = new DisplayService(p, this);
+        this.displayService = new SketchDisplayService(p, this);
 
         this.registerClientListeners();
     }
@@ -90,6 +86,11 @@ export class SketchApp {
                     });
                 this.turn = gameData.turn;
                 this.isUsersTurn = gameData.turnUserId == this.client.userId;
+                this.won = gameData.wonUserId != null;
+                this.requestedRematchUserId = gameData.requestedRematchUserId;
+                if (!this.requestedRematchUserId) {
+                    this.rematchRequestSent = false;
+                }
             }
         })
     }
@@ -105,7 +106,7 @@ export class SketchApp {
 
         this.p.textFont(this.comicFont, 48);
         this.points = SharedGameUtils.getPoints(this.p.width, this.p.height, this.tileWidth);
-        this.turns = this.getService.getTurns();
+        this.turns = SketchUtils.getTurns(this, this.p);
         this.matrix = SharedGameUtils.getAdjacencyMatrix(this.points, this.tileWidth);
         this.edgeIndexes = SharedGameUtils.getEdgeIndexes();
         this.borderIndexes = SharedGameUtils.getBorderIndexes(this.points);
@@ -127,11 +128,15 @@ export class SketchApp {
             this.displayService.displayGameWelcomeInstructions();
             return;
         }
+        if (this.rematchRequestSent) {
+            this.displayService.displayGameAwaitingRematchInstructions();
+            return;
+        }
         this.displayService.displayBackground();
         this.displayService.displayBoard();
         this.displayService.displayHUD();
         if (this.won) {
-            this.displayService.displayWinScreen();
+            this.displayService.displayWinScreen(!!this.requestedRematchUserId);
             return;
         }
     }
@@ -141,27 +146,23 @@ export class SketchApp {
             return;
         }
         if (!this.started) {
-            this.logicService.startGame();
+            this.started = true;
             return;
         }
         if (this.won) {
-            this.logicService.reset();
+            if (!this.requestedRematchUserId) {
+                this.rematchRequestSent = true;
+            }
+            this.client.onRematchRequested();
             return;
         }
         if (!this.isUsersTurn) {
-            DomUtils.displayErrorStatus("It is not your turn");
+            this.client.lastTimeout = DomUtils.displayErrorStatus("It is not your turn", this.client.lastTimeout);
             return;
         }
-        const closestIndex = Utils.findClosestPointIndex(this.points, this.p.mouseX, this.p.mouseY);
+        const closestIndex = SketchUtils.findClosestPointIndex(this.points, this.p.mouseX, this.p.mouseY);
         if (closestIndex != null) {
             this.client.onPointIndexClicked(closestIndex);
         }
-        // if (this.logicService.clickClosestPoint()) {
-        //     if (this.logicService.isThereAPath(this.turn, this.points, this.edgeIndexes, this.borderIndexes, this.matrix)) {
-        //         this.logicService.winGame();
-        //     } else {
-        //         this.logicService.switchTurn();
-        //     }
-        // }
     }
 }

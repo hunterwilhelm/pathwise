@@ -22,8 +22,11 @@ export class DomUtils {
         DomUtils.setElementTextContent("#user-id-status", message);
     }
 
-    static displayErrorStatus(message: string) {
-        DomUtils.setElementTextContent("#error-status", message);
+    static displayErrorStatus(message: string, lastTimeout?: number): number {
+        clearTimeout(lastTimeout);
+        const selector = "#error-status";
+        DomUtils.setElementTextContent(selector, message);
+        return window.setTimeout(() => DomUtils.setElementTextContent(selector, ""), 3000);
     }
 
     static displayRoomInfos(roomInfos: RoomInfo[], userInRoom: boolean, userId: string, joinRoomCallback: RoomInfoCallback, leaveRoomCallback: RoomInfoCallback, messageCallback: VoidCallback) {
@@ -44,20 +47,26 @@ export class DomUtils {
                     const button = document.createElement('button');
                     button.textContent = "Leave Room";
                     button.type = 'submit';
-                    button.addEventListener("click", () => {leaveRoomCallback(r)}, false);
+                    button.addEventListener("click", () => {
+                        leaveRoomCallback(r)
+                    }, false);
                     action.appendChild(button);
 
                     const messageButton = document.createElement('button');
                     messageButton.textContent = "Send Message";
                     messageButton.type = 'submit';
-                    messageButton.addEventListener("click", () => {messageCallback()}, false);
+                    messageButton.addEventListener("click", () => {
+                        messageCallback()
+                    }, false);
                     action.appendChild(messageButton);
                 } else {
                     const button = document.createElement('button');
                     button.textContent = "Join Room";
                     button.type = 'submit';
                     if (userInRoom) button.disabled = true;
-                    button.addEventListener("click", () => {joinRoomCallback(r)}, false);
+                    button.addEventListener("click", () => {
+                        joinRoomCallback(r)
+                    }, false);
                     action.appendChild(button);
                 }
 

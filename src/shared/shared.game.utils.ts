@@ -64,4 +64,34 @@ export class SharedGameUtils {
             {start: [116, 113, 109, 104, 98, 91, 83, 74, 64], end: [56, 46, 37, 29, 22, 16, 11, 7, 4]},
         ];
     }
+
+
+
+    static isThereAPath(turn: number, points: Point[], edgeIndexes: readonly EdgeSet[], borderIndexes: readonly number[], matrix: readonly number[][]) {
+        function pathFinder(s: number, visitedIndexes: number[], endEdgeIndexes: number[]) {
+            if (endEdgeIndexes.includes(s)) return true;
+            const adjacents = matrix[s]
+                .map((v, i) => v == 1 ? i : 0)
+                .filter(v => v != 0)
+                .filter(v => !borderIndexes.includes(v))
+                .filter(v => !visitedIndexes.includes(v))
+                .filter(v => points[v].turn == turn);
+
+            visitedIndexes.push(s);
+            for (let a of adjacents) {
+                if (pathFinder(a, visitedIndexes, endEdgeIndexes)) return true;
+            }
+            return false;
+        }
+
+        const startEdgeIndexes = edgeIndexes[turn].start.filter(s=>points[s].turn === turn);
+        const endEdgeIndexes = edgeIndexes[turn].end.filter(s=>points[s].turn === turn);
+
+        for (let s of startEdgeIndexes) {
+            let visitedIndexes: number[] = [];
+            if (pathFinder(s, visitedIndexes, endEdgeIndexes)) return true;
+        }
+
+        return false;
+    }
 }

@@ -8,6 +8,7 @@ import {RoomSocketService} from "./room.socket.service";
 import {TurnList} from "../shared/models/turn-list.model";
 import {GameData} from "../shared/models/game-data.model";
 import {SharedDataUtils} from "../shared/shared.data.utils";
+import {SharedGameUtils} from "../shared/shared.game.utils";
 
 export class Room {
     private readonly ROOM_EXPIRATION_TIME_IN_MILLISECONDS: number = 2 * 1000;
@@ -21,6 +22,8 @@ export class Room {
     private player1?: User;
     private player2?: User;
     private turn: number;
+    private wonTurn?: number;
+    private requestedRematchTurn?: number;
     // started: boolean;
     // won: boolean;
 
@@ -28,8 +31,11 @@ export class Room {
     readonly matrix: readonly number[][];
     readonly edgeIndexes: readonly EdgeSet[];
     readonly borderIndexes: readonly number[];
+    readonly app: App;
+    private startingTurn: number;
 
     constructor(app: App) {
+        this.app = app;
         this.socketService = new RoomSocketService(this);
 
         this.id = AppUtils.getRandomRoomId(app.dataService);
@@ -37,8 +43,19 @@ export class Room {
         this.matrix = app.dataService.matrix;
         this.edgeIndexes = app.dataService.edgeIndexes;
         this.borderIndexes = app.dataService.borderIndexes;
-        this.turn = 0;
         this.roomEmptySince = new Date();
+        this.turn = 0;
+        this.startingTurn = this.turn;
+    }
+
+    private reset() {
+        this.points.forEach(p=>{
+            p.turn = undefined;
+        })
+        this.switchStartingTurn();
+        this.turn = this.startingTurn;
+        this.wonTurn = undefined;
+        this.requestedRematchTurn = undefined;
     }
 
 
@@ -79,7 +96,12 @@ export class Room {
         } else {
             return false;
         }
-        if (this.users.length === 0) this.roomEmptySince = new Date();
+        if (this.users.length === 0) {
+            this.roomEmptySince = new Date();
+        } else {
+            this.requestedRematchTurn = undefined;
+            this.socketService.sendGameData();
+        }
         return true;
     }
 
@@ -103,13 +125,27 @@ export class Room {
         return undefined;
     }
 
+    private getUserByCurrentTurn(turn: number | undefined): User | undefined {
+        if (turn === 0) return this.player1;
+        if (turn === 1) return this.player2;
+        return undefined;
+    }
+
+    private getTurnByUserId(userId: string): number | undefined {
+        if (this.player1?.id === userId) {
+            return 0;
+        } else if (this.player2?.id === userId) {
+            return 1;
+        }
+        return undefined;
+    }
+
     switchTurn() {
         this.turn = this.turn === 1 ? 0 : 1;
     }
 
-    getUserByCurrentTurn(): User | undefined {
-        if (this.turn === 0) return this.player1;
-        return this.player2;
+    switchStartingTurn() {
+        this.startingTurn = this.startingTurn === 1 ? 0 : 1;
     }
 
     onPointIndexClickedEventHandler(userId: string, pointIndex: number): void {
@@ -119,12 +155,32 @@ export class Room {
             const p = this.points[pointIndex];
             if (!p.border && p.turn == null) {
                 p.turn = this.turn;
-                this.switchTurn();
+                if (SharedGameUtils.isThereAPath(this.turn, this.points, this.edgeIndexes, this.borderIndexes, this.matrix)) {
+                    this.wonTurn = this.turn;
+                } else {
+                    this.switchTurn();
+                }
                 this.socketService.sendGameData();
             } else {
                 this.socketService.sendErrorMessage(user, "You cannot click there.");
             }
         }
+    }
+
+    onRematchRequestEventHandler(userId: string) {
+        const turn = this.getTurnByUserId(userId);
+        if (turn == null) return;
+        if (this.requestedRematchTurn === turn) {
+            this.socketService.sendErrorMessage(this.getUserById(userId), "Your opponent has already requested a rematch");
+            return;
+        }
+
+        if (this.requestedRematchTurn) {
+            this.reset();
+        } else {
+            this.requestedRematchTurn = turn;
+        }
+        this.socketService.sendGameData();
     }
 
     getTurnList(): TurnList {
@@ -134,8 +190,12 @@ export class Room {
     getGameData(): GameData {
         return {
             turn: this.turn,
-            turnUserId: this.getUserByCurrentTurn()?.id,
-            turnListCompressed: SharedDataUtils.encodeTurnList(this.getTurnList())
+            turnUserId: this.getUserByCurrentTurn(this.turn)?.id,
+            turnListCompressed: SharedDataUtils.encodeTurnList(this.getTurnList()),
+            wonUserId: this.getUserByCurrentTurn(this.wonTurn)?.id,
+            requestedRematchUserId: this.getUserByCurrentTurn(this.requestedRematchTurn)?.id
         };
     }
+
+
 }
