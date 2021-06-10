@@ -98,6 +98,7 @@ export class SketchApp {
 
     setup() {
         const canvas = this.p.createCanvas(SharedGameConstants.CANVAS_WIDTH, SharedGameConstants.CANVAS_HEIGHT);
+        canvas.parent("sketch");
         canvas.mouseClicked(() => {
             this.mouseClicked()
             // prevent default

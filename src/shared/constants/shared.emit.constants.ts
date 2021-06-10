@@ -11,7 +11,6 @@ export enum SharedEmitConstants {
 
     // game
     SEND_GAME_DATA,
-    GAME_MESSAGE,
     GAME_CLICKED_POINT_INDEX,
     GAME_REQUEST_REMATCH,
 }

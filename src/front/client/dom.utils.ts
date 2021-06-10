@@ -1,7 +1,6 @@
 import {RoomInfo} from "../../shared/models/room.info.model";
 
 type RoomInfoCallback = (roomInfo: RoomInfo) => void;
-type VoidCallback = () => void;
 
 export class DomUtils {
     private static setElementTextContent(selectors: string, content: string): boolean {
@@ -14,12 +13,7 @@ export class DomUtils {
     }
 
     static displayStatus(message: string) {
-        DomUtils.setElementTextContent("#connection-status", message);
         document.title = message;
-    }
-
-    static displayUserIdStatus(message: string) {
-        DomUtils.setElementTextContent("#user-id-status", message);
     }
 
     static displayErrorStatus(message: string, lastTimeout?: number): number {
@@ -29,7 +23,7 @@ export class DomUtils {
         return window.setTimeout(() => DomUtils.setElementTextContent(selector, ""), 3000);
     }
 
-    static displayRoomInfos(roomInfos: RoomInfo[], userInRoom: boolean, userId: string, joinRoomCallback: RoomInfoCallback, leaveRoomCallback: RoomInfoCallback, messageCallback: VoidCallback) {
+    static displayRoomInfos(roomInfos: RoomInfo[], userInRoom: boolean, userId: string, joinRoomCallback: RoomInfoCallback, leaveRoomCallback: RoomInfoCallback) {
 
         const listRoomsTable = document.querySelector("#list-rooms-table tbody");
         if (listRoomsTable) {
@@ -46,22 +40,16 @@ export class DomUtils {
                 if (r.userIds.includes(userId)) {
                     const button = document.createElement('button');
                     button.textContent = "Leave Room";
+                    button.className = "btn btn-danger";
                     button.type = 'submit';
                     button.addEventListener("click", () => {
                         leaveRoomCallback(r)
                     }, false);
                     action.appendChild(button);
-
-                    const messageButton = document.createElement('button');
-                    messageButton.textContent = "Send Message";
-                    messageButton.type = 'submit';
-                    messageButton.addEventListener("click", () => {
-                        messageCallback()
-                    }, false);
-                    action.appendChild(messageButton);
                 } else {
                     const button = document.createElement('button');
                     button.textContent = "Join Room";
+                    button.className = "btn btn-success";
                     button.type = 'submit';
                     if (userInRoom) button.disabled = true;
                     button.addEventListener("click", () => {

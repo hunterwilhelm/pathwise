@@ -87,14 +87,6 @@ export class AppSocketService {
     }
 
     private registerGameEvents(socket: Socket, user: User) {
-        socket.on(SharedEmitConstants.GAME_MESSAGE.toString(), (message) => {
-            const userRoom = this.app.dataService.getRoomByUserId(user.id);
-            if (userRoom) {
-                userRoom.users.forEach(u => {
-                    u.socket.emit(SharedEmitConstants.GAME_MESSAGE.toString(), message);
-                });
-            }
-        });
         socket.on(SharedEmitConstants.GAME_CLICKED_POINT_INDEX.toString(), (pointIndex: number) => {
             const userRoom = this.app.dataService.getRoomByUserId(user.id);
             if (userRoom) {

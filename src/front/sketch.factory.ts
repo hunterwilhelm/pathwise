@@ -6,7 +6,6 @@ const sketchFactory = (client: ClientService) => {
     return (p: p5) => {
         let main = new SketchApp(p, client);
 
-
         p.setup = function () {
             main.setup();
         };

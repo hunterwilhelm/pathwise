@@ -42,18 +42,11 @@ export class ClientService {
 
     registerConnectionListeners() {
         this.socket.on("connect", () => {
-            console.log("connection");
-            DomUtils.displayStatus("Connected!");
+            DomUtils.displayStatus("Connected! - Pathwise Online Multiplayer");
             this.userId = CookieUtils.getCookie(SharedCookieConstants.USER_ID);
-            if (this.userId) {
-                DomUtils.displayUserIdStatus(this.userId);
-            } else {
-                DomUtils.displayUserIdStatus("Server Error: Didn't receive user id");
-            }
         });
-        this.socket.on("disconnect", (message) => {
-            console.log("disconnect", message);
-            DomUtils.displayStatus("Disconnected :(");
+        this.socket.on("disconnect", () => {
+            DomUtils.displayStatus("Disconnected - Pathwise Online Multiplayer");
         });
 
         this.socket.on(SharedEmitConstants.ERROR.toString(), (message) => {
@@ -77,7 +70,6 @@ export class ClientService {
                     this.userId,
                     (roomInfo) => this.onJoinRoomEventHandler(roomInfo),
                     (roomInfo) => this.onLeaveRoomEventHandler(roomInfo),
-                    () => this.sendMessage()
                 );
 
 
@@ -91,9 +83,6 @@ export class ClientService {
     }
 
     registerGameListeners() {
-        this.socket.on(SharedEmitConstants.GAME_MESSAGE.toString(), (message: string) => {
-            alert(message);
-        })
         this.socket.on(SharedEmitConstants.SEND_GAME_DATA.toString(), (gameData: GameData) => {
             this.$gameData.next(gameData);
         })
@@ -105,10 +94,6 @@ export class ClientService {
 
     onLeaveRoomEventHandler(roomInfo: RoomInfo) {
         this.socket.emit(SharedEmitConstants.ROOM_LEAVE.toString(), roomInfo);
-    }
-
-    sendMessage() {
-        this.socket.emit(SharedEmitConstants.GAME_MESSAGE.toString(), "hello");
     }
 
     getUserInRoomObservable(): Observable<boolean> {
@@ -128,10 +113,6 @@ export class ClientService {
     }
 
     onRematchRequested() {
-        this.socket.emit(SharedEmitConstants.GAME_REQUEST_REMATCH.toString());
-    }
-
-    onRematchAccepted() {
         this.socket.emit(SharedEmitConstants.GAME_REQUEST_REMATCH.toString());
     }
 }
