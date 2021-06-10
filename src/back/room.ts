@@ -11,7 +11,7 @@ import {SharedDataUtils} from "../shared/shared.data.utils";
 import {SharedGameUtils} from "../shared/shared.game.utils";
 
 export class Room {
-    private readonly ROOM_EXPIRATION_TIME_IN_MILLISECONDS: number = 2 * 1000;
+    private readonly ROOM_EXPIRATION_TIME_IN_MILLISECONDS: number = 5 * 1000;
 
     private socketService: RoomSocketService;
 
@@ -151,6 +151,10 @@ export class Room {
     onPointIndexClickedEventHandler(userId: string, pointIndex: number): void {
         const user = this.getUserById(userId);
         if (!user) return;
+        if (this.getUserByCurrentTurn(this.turn)?.id != userId) {
+            this.socketService.sendErrorMessage(user, "It is not your turn.");
+            return
+        }
         if (pointIndex < this.points.length) {
             const p = this.points[pointIndex];
             if (!p.border && p.turn == null) {

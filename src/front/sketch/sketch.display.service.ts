@@ -57,7 +57,7 @@ export class SketchDisplayService {
         });
     }
 
-    displayHUD() {
+    displayHUD(errorMessage: string | undefined) {
 
         // top rectangle
         const X = this.p.width / 2;
@@ -78,6 +78,20 @@ export class SketchDisplayService {
         const possessive = this.app.isUsersTurn ? "r" : "'s";
         const status = this.app.won ? " won!" : `${possessive} turn`;
         this.p.text(`${turnName}: ${subject}${status}`, X, Y - 5);
+
+        // error message
+        if (errorMessage) {
+            this.p.fill(248, 215, 219);
+            this.p.rectMode(this.p.CORNER);
+            this.p.stroke(245, 199, 204);
+            this.p.strokeWeight(1);
+            this.p.rect(X - W/2, Y - H / 2 + 50, W, H);
+            this.p.fill(116, 30, 54);
+            this.p.textSize(20);
+            this.p.noStroke();
+            this.p.textAlign(this.p.CENTER, this.p.CENTER);
+            this.p.text(errorMessage, X, Y + 50);
+        }
 
         // speech bubbles
         if (!this.app.won) {

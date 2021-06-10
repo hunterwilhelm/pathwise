@@ -9,7 +9,6 @@ import {SketchUtils} from "./sketch.utils";
 import {SharedGameConstants} from "../../shared/constants/shared.game.constants";
 import {GameData} from "../../shared/models/game-data.model";
 import {SharedDataUtils} from "../../shared/shared.data.utils";
-import {DomUtils} from "../client/dom.utils";
 
 export class SketchApp {
     p: p5;
@@ -41,6 +40,8 @@ export class SketchApp {
     isUsersTurn: boolean = false;
     private rematchRequestSent: boolean = false;
     private requestedRematchUserId?: string;
+    private lastTimeout: number = 0;
+    private errorMessage?: string;
 
     constructor(p: p5, client: ClientService) {
         this.p = p;
@@ -92,6 +93,9 @@ export class SketchApp {
                     this.rematchRequestSent = false;
                 }
             }
+        });
+        this.client.getGameErrorMessageAsObservable().subscribe((message: string) => {
+            this.showErrorMessage(message);
         })
     }
 
@@ -135,7 +139,7 @@ export class SketchApp {
         }
         this.displayService.displayBackground();
         this.displayService.displayBoard();
-        this.displayService.displayHUD();
+        this.displayService.displayHUD(this.errorMessage);
         if (this.won) {
             this.displayService.displayWinScreen(!!this.requestedRematchUserId);
             return;
@@ -158,12 +162,20 @@ export class SketchApp {
             return;
         }
         if (!this.isUsersTurn) {
-            this.client.lastTimeout = DomUtils.displayErrorStatus("It is not your turn", this.client.lastTimeout);
+            this.showErrorMessage("It is not your turn");
             return;
         }
         const closestIndex = SketchUtils.findClosestPointIndex(this.points, this.p.mouseX, this.p.mouseY);
         if (closestIndex != null) {
             this.client.onPointIndexClicked(closestIndex);
+        } else {
+            this.showErrorMessage("Not a valid tile");
         }
+    }
+
+    showErrorMessage(message: string) {
+        this.errorMessage = message;
+        clearTimeout(this.lastTimeout);
+        this.lastTimeout = window.setTimeout(() => {this.errorMessage = undefined;}, 3000);
     }
 }

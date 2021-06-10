@@ -11,11 +11,11 @@ import {GameData} from "../../shared/models/game-data.model";
 export class ClientService {
     socket: Socket;
     userId: string | undefined;
-    lastTimeout: number = 0;
 
     private $userInRoom = new BehaviorSubject<boolean>(false);
     private $opponentInRoom = new BehaviorSubject<boolean>(false);
     private $gameData = new BehaviorSubject<GameData | undefined>(undefined);
+    private $gameErrorMessage = new BehaviorSubject<string>("");
 
     constructor() {
         this.socket = io();
@@ -48,9 +48,11 @@ export class ClientService {
         this.socket.on("disconnect", () => {
             DomUtils.displayStatus("Disconnected - Pathwise Online Multiplayer");
         });
-
-        this.socket.on(SharedEmitConstants.ERROR.toString(), (message) => {
-            this.lastTimeout = DomUtils.displayErrorStatus(message, this.lastTimeout);
+        this.socket.on(SharedEmitConstants.GAME_ERROR.toString(), (message) => {
+            this.$gameErrorMessage.next(message);
+        });
+        this.socket.on(SharedEmitConstants.ROOM_ERROR.toString(), (message) => {
+            alert(message);
         });
     }
 
@@ -106,6 +108,10 @@ export class ClientService {
 
     getGameDataAsObservable(): Observable<GameData | undefined> {
         return this.$gameData.asObservable();
+    }
+
+    getGameErrorMessageAsObservable(): Observable<string> {
+        return this.$gameErrorMessage.asObservable();
     }
 
     onPointIndexClicked(pointIndex: number) {

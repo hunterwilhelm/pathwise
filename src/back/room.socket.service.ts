@@ -11,7 +11,7 @@ export class RoomSocketService {
 
 
     sendErrorMessage(user: User | undefined, message: string) {
-        user?.socket.emit(SharedEmitConstants.ERROR.toString(), message);
+        user?.socket.emit(SharedEmitConstants.GAME_ERROR.toString(), message);
     }
 
     sendGameData() {

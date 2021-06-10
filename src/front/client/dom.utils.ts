@@ -3,24 +3,8 @@ import {RoomInfo} from "../../shared/models/room.info.model";
 type RoomInfoCallback = (roomInfo: RoomInfo) => void;
 
 export class DomUtils {
-    private static setElementTextContent(selectors: string, content: string): boolean {
-        const statusDom = document.querySelector(selectors);
-        if (statusDom) {
-            statusDom.textContent = content;
-            return true;
-        }
-        return false;
-    }
-
     static displayStatus(message: string) {
         document.title = message;
-    }
-
-    static displayErrorStatus(message: string, lastTimeout?: number): number {
-        clearTimeout(lastTimeout);
-        const selector = "#error-status";
-        DomUtils.setElementTextContent(selector, message);
-        return window.setTimeout(() => DomUtils.setElementTextContent(selector, ""), 3000);
     }
 
     static displayRoomInfos(roomInfos: RoomInfo[], userInRoom: boolean, userId: string, joinRoomCallback: RoomInfoCallback, leaveRoomCallback: RoomInfoCallback) {

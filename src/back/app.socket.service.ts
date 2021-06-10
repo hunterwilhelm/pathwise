@@ -19,7 +19,7 @@ export class AppSocketService {
         // validate
         const userId = AppUtils.getCookieFromSocket(socket, SharedCookieConstants.USER_ID);
         if (userId == null) {
-            socket.emit(SharedEmitConstants.ERROR.toString(), "Missing user id");
+            socket.emit(SharedEmitConstants.ROOM_ERROR.toString(), "Missing user id");
             socket.disconnect();
             return;
         }
@@ -32,7 +32,7 @@ export class AppSocketService {
             if (room.joinRoom(user)) {
                 this.broadcastRoomInfos();
             } else {
-                socket.emit(SharedEmitConstants.ERROR.toString(), "Room is full")
+                socket.emit(SharedEmitConstants.ROOM_ERROR.toString(), "Room is full")
             }
         }
 
@@ -54,7 +54,7 @@ export class AppSocketService {
     private registerRoomEvents(socket: Socket, user: User) {
         socket.on(SharedEmitConstants.ROOM_CREATE.toString(), () => {
             if (!this.createRoom(user)) {
-                socket.emit(SharedEmitConstants.ERROR.toString(), "You are already in a room");
+                socket.emit(SharedEmitConstants.ROOM_ERROR.toString(), "You are already in a room");
             } else {
                 this.broadcastRoomInfos();
             }
@@ -62,10 +62,10 @@ export class AppSocketService {
         socket.on(SharedEmitConstants.ROOM_JOIN.toString(), (roomInfo: RoomInfo) => {
             const room = this.app.dataService.getRoomById(roomInfo.id);
             if (!room) {
-                socket.emit(SharedEmitConstants.ERROR.toString(), "That room does not exist");
+                socket.emit(SharedEmitConstants.ROOM_ERROR.toString(), "That room does not exist");
             } else {
                 if (!room.joinRoom(user)) {
-                    socket.emit(SharedEmitConstants.ERROR.toString(), "You are already in a different room");
+                    socket.emit(SharedEmitConstants.ROOM_ERROR.toString(), "You are already in a different room");
                 } else {
                     this.broadcastRoomInfos();
                 }
@@ -74,10 +74,10 @@ export class AppSocketService {
         socket.on(SharedEmitConstants.ROOM_LEAVE.toString(), (roomInfo: RoomInfo) => {
             const room = this.app.dataService.getRoomById(roomInfo.id);
             if (!room) {
-                socket.emit(SharedEmitConstants.ERROR.toString(), "That room does not exist");
+                socket.emit(SharedEmitConstants.ROOM_ERROR.toString(), "That room does not exist");
             } else {
                 if (!room.leaveRoom(user.id)) {
-                    socket.emit(SharedEmitConstants.ERROR.toString(), "You are not in that room");
+                    socket.emit(SharedEmitConstants.ROOM_ERROR.toString(), "You are not in that room");
                 } else {
                     this.broadcastRoomInfos();
                 }
