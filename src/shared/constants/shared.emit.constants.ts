@@ -1,4 +1,7 @@
 export enum SharedEmitConstants {
+    /**
+     * These are the socket communication protocols
+     */
     // rooms
     ROOM_CREATE,
     ROOM_JOIN,

@@ -3,6 +3,9 @@ import {RoomInfo} from "../../shared/models/room.info.model";
 type RoomInfoCallback = (roomInfo: RoomInfo) => void;
 
 export class DomUtils {
+    /**
+     * Controls the web page
+     */
     static displayConnectionStatus(message: string) {
         document.title = message + " - Pathwise Online Multiplayer";
         const connectionStatus = document.querySelector('#connection-status');
@@ -15,8 +18,7 @@ export class DomUtils {
         document.body.style.background = hexColor;
     }
 
-    static displayRoomInfos(roomInfos: RoomInfo[], userInRoom: boolean, userId: string, joinRoomCallback: RoomInfoCallback, leaveRoomCallback: RoomInfoCallback) {
-
+    static displayRoomInfoTable(roomInfos: RoomInfo[], userInRoom: boolean, userId: string, joinRoomCallback: RoomInfoCallback, leaveRoomCallback: RoomInfoCallback) {
         const listRoomsTable = document.querySelector("#list-rooms-table tbody");
         if (listRoomsTable) {
             const documentFragment = document.createDocumentFragment();

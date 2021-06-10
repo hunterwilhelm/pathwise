@@ -9,6 +9,10 @@ import {BehaviorSubject, Observable} from "rxjs";
 import {GameData} from "../../shared/models/game-data.model";
 
 export class ClientService {
+    /**
+     * This class manages the client communication and data
+     * Using the RxJs library, we can create reactive communication links
+     */
     socket: Socket;
     userId: string | undefined;
 
@@ -69,7 +73,7 @@ export class ClientService {
                     return r.userIds.length > 1
                 }));
 
-                DomUtils.displayRoomInfos(
+                DomUtils.displayRoomInfoTable(
                     roomInfos,
                     this.$userInRoom.value,
                     this.userId,

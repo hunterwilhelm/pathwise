@@ -9,6 +9,9 @@ import {App} from "./app";
 import {Room} from "./room";
 
 export class AppSocketService {
+    /**
+     * This class manages the socket protocols of the back end
+     */
     app: App;
 
     constructor(app: App) {
@@ -16,6 +19,9 @@ export class AppSocketService {
     }
 
     onSocketConnectionEventHandler(socket: Socket) {
+        /**
+         * When a user connects, setup cookies and make sure everything is in order
+         */
         // validate
         const userId = AppUtils.getCookieFromSocket(socket, SharedCookieConstants.USER_ID);
         if (userId == null) {
@@ -52,7 +58,13 @@ export class AppSocketService {
 
 
     private registerRoomEvents(socket: Socket, user: User) {
+        /**
+         * Setup the room protocols
+         */
         socket.on(SharedEmitConstants.ROOM_CREATE.toString(), () => {
+            /**
+             * Called when a user creates a room
+             */
             if (!this.createRoom(user)) {
                 socket.emit(SharedEmitConstants.ROOM_ERROR.toString(), "You are already in a room");
             } else {
@@ -60,12 +72,15 @@ export class AppSocketService {
             }
         });
         socket.on(SharedEmitConstants.ROOM_JOIN.toString(), (roomInfo: RoomInfo) => {
+            /**
+             * Called when a user joins a room
+             */
             const room = this.app.dataService.getRoomById(roomInfo.id);
             if (!room) {
                 socket.emit(SharedEmitConstants.ROOM_ERROR.toString(), "That room does not exist");
                 return;
             }
-            if (this.app.dataService.getRoomInfosByUserId(user.id).length !== 0) {
+            if (this.app.dataService.getRoomsByUserId(user.id).length !== 0) {
                 socket.emit(SharedEmitConstants.ROOM_ERROR.toString(), "You are already in a room");
                 return;
             }
@@ -77,6 +92,9 @@ export class AppSocketService {
 
         });
         socket.on(SharedEmitConstants.ROOM_LEAVE.toString(), (roomInfo: RoomInfo) => {
+            /**
+             * Called when a user leaves a room
+             */
             const room = this.app.dataService.getRoomById(roomInfo.id);
             if (!room) {
                 socket.emit(SharedEmitConstants.ROOM_ERROR.toString(), "That room does not exist");
@@ -93,12 +111,20 @@ export class AppSocketService {
 
     private registerGameEvents(socket: Socket, user: User) {
         socket.on(SharedEmitConstants.GAME_CLICKED_POINT_INDEX.toString(), (pointIndex: number) => {
+            /**
+             * Called when a user tries to click on a tile
+             * THe server validates the action
+             */
             const userRoom = this.app.dataService.getRoomByUserId(user.id);
             if (userRoom) {
                 userRoom.onPointIndexClickedEventHandler(user.id, pointIndex);
             }
         });
         socket.on(SharedEmitConstants.GAME_REQUEST_REMATCH.toString(), () => {
+            /**
+             * Called when a user requests a rematch
+             * Both users have to agree before the next match is started
+             */
             const userRoom = this.app.dataService.getRoomByUserId(user.id);
             if (userRoom) {
                 userRoom.onRematchRequestEventHandler(user.id);
@@ -107,7 +133,10 @@ export class AppSocketService {
     }
 
     private createRoom(user: User): boolean {
-        if (this.app.dataService.getRoomInfosByUserId(user.id).length !== 0) return false;
+        /**
+         * Makes a room and puts the room creator in it
+         */
+        if (this.app.dataService.getRoomsByUserId(user.id).length !== 0) return false;
         this.app.dataService
             .addRoom(this.app)
             .joinRoom(user);
@@ -115,6 +144,9 @@ export class AppSocketService {
     }
 
     broadcastRoomInfos() {
+        /**
+         * Update all of the clients that are connected of the room list
+         */
         this.app.io.sockets.emit(SharedEmitConstants.ROOM_LIST_INFOS.toString(), this.app.dataService.getRoomInfos());
     }
 

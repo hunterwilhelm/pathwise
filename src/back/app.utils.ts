@@ -12,10 +12,17 @@ export class AppUtils {
     }
 
     static getRandomUserId(): string {
+        /**
+         * Essentially a UUID for each user
+         */
         return AppUtils.generateRandomString('0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ', 32);
     }
 
     static getRandomRoomId(game: AppDataService): string {
+        /**
+         * Shorter room code means more collisions, so collision detection is necessary
+         * Shorter codes is better for user experience
+         */
         do {
             const id = AppUtils.generateRandomString('0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ', 4);
             if (!game.getRoomById(id)) {
