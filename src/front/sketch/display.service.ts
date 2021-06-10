@@ -31,7 +31,7 @@ export class DisplayService {
         if (this.app.won) closestIndex = undefined;
 
         this.app.points.forEach((p, i) => {
-            if (closestIndex === i) {
+            if (p.turn == null && this.app.isUsersTurn && closestIndex === i) {
                 this.p.image(this.app.turns[this.app.turn].img, p.x, p.y, this.app.tileWidth*2, this.app.tileWidth*2);
                 this.p.fill(this.app.turns[this.app.turn].color);
                 this.p.stroke(100);
@@ -46,8 +46,8 @@ export class DisplayService {
             }
 
             this.p.imageMode(this.p.CENTER);
-            if (p.img) {
-                this.p.image(p.img, p.x, p.y, this.app.tileWidth*2, this.app.tileWidth*2);
+            if (p.turn != null) {
+                this.p.image(this.app.turns[p.turn].img, p.x, p.y, this.app.tileWidth*2, this.app.tileWidth*2);
             } else {
                 this.p.image(this.app.imgStar1, p.x, p.y, this.app.tileWidth*2, this.app.tileWidth*2);
             }
@@ -73,12 +73,19 @@ export class DisplayService {
         this.p.textSize(25);
         this.p.noStroke();
         this.p.textAlign(this.p.CENTER, this.p.CENTER);
-        this.p.text(this.app.turns[this.app.turn].name + (this.app.won ? " won!" : "'s turn"), X, Y - 5);
+        const turnName = this.app.turns[this.app.turn].name;
+        const possession = this.app.isUsersTurn ? "Your" : "Opponent's";
+        const status = this.app.won ? "won!" : "turn";
+        this.p.text(`${turnName}: ${possession} ${status}`, X, Y - 5);
 
         // speech bubbles
         if (!this.app.won) {
             this.p.image(this.app.turns[this.app.turn].speech, this.app.turns[this.app.turn].speechPos.x, this.app.turns[this.app.turn].speechPos.y);
-            this.p.text("My turn!", this.app.turns[this.app.turn].speechPos.x, this.app.turns[this.app.turn].speechPos.y - 35);
+            this.p.textSize(20);
+            const speechText = this.app.isUsersTurn ?
+                "Your turn!" :
+                "Waiting...";
+            this.p.text(speechText, this.app.turns[this.app.turn].speechPos.x, this.app.turns[this.app.turn].speechPos.y - 35);
         }
     }
 

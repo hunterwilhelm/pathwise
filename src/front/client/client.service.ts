@@ -6,6 +6,7 @@ import {CookieUtils} from "./cookie.utils";
 import {SharedCookieConstants} from "../../shared/constants/shared.cookie.constants";
 // @ts-ignore
 import {BehaviorSubject, Observable} from "rxjs";
+import {GameData} from "../../shared/models/game-data.model";
 
 export class ClientService {
     socket: Socket;
@@ -13,6 +14,7 @@ export class ClientService {
 
     private $userInRoom = new BehaviorSubject<boolean>(false);
     private $opponentInRoom = new BehaviorSubject<boolean>(false);
+    private $gameData = new BehaviorSubject<GameData | undefined>(undefined);
 
     constructor() {
         this.socket = io();
@@ -94,6 +96,9 @@ export class ClientService {
         this.socket.on(SharedEmitConstants.GAME_MESSAGE.toString(), (message: string) => {
             alert(message);
         })
+        this.socket.on(SharedEmitConstants.SEND_GAME_DATA.toString(), (gameData: GameData) => {
+            this.$gameData.next(gameData);
+        })
     }
 
     onJoinRoomEventHandler(roomInfo: RoomInfo) {
@@ -114,6 +119,10 @@ export class ClientService {
 
     getOpponentInRoomObservable(): Observable<boolean> {
         return this.$opponentInRoom.asObservable();
+    }
+
+    getGameDataAsObservable(): Observable<GameData | undefined> {
+        return this.$gameData.asObservable();
     }
 
     onPointIndexClicked(pointIndex: number) {

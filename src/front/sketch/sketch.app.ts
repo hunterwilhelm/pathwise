@@ -9,6 +9,9 @@ import {ClientService} from "../client/client.service";
 import {SharedGameUtils} from "../../shared/shared.game.utils";
 import {Utils} from "./utils";
 import {SharedGameConstants} from "../../shared/constants/shared.game.constants";
+import {GameData} from "../../shared/models/game-data.model";
+import {SharedDataUtils} from "../../shared/shared.data.utils";
+import {DomUtils} from "../client/dom.utils";
 
 export class SketchApp {
     p: p5;
@@ -39,6 +42,7 @@ export class SketchApp {
     borderIndexes: number[];
     private userInRoom: boolean = false;
     private opponentInRoom: boolean = false;
+    isUsersTurn: boolean = false;
 
     constructor(p: p5, client: ClientService) {
         this.p = p;
@@ -75,6 +79,18 @@ export class SketchApp {
         });
         this.client.getOpponentInRoomObservable().subscribe((value: boolean) => {
             this.opponentInRoom = value;
+        })
+        this.client.getGameDataAsObservable().subscribe((gameData: GameData | undefined) => {
+            if (gameData) {
+                SharedDataUtils.decodeTurnList(gameData.turnListCompressed)
+                    .forEach((v, i) => {
+                        if (i < this.points.length) {
+                            this.points[i].turn = v;
+                        }
+                    });
+                this.turn = gameData.turn;
+                this.isUsersTurn = gameData.turnUserId == this.client.userId;
+            }
         })
     }
 
@@ -132,8 +148,12 @@ export class SketchApp {
             this.logicService.reset();
             return;
         }
+        if (!this.isUsersTurn) {
+            DomUtils.displayErrorStatus("It is not your turn");
+            return;
+        }
         const closestIndex = Utils.findClosestPointIndex(this.points, this.p.mouseX, this.p.mouseY);
-        if (closestIndex !== undefined) {
+        if (closestIndex != null) {
             this.client.onPointIndexClicked(closestIndex);
         }
         // if (this.logicService.clickClosestPoint()) {

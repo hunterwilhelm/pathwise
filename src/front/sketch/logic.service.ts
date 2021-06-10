@@ -13,12 +13,12 @@ export class LogicService {
     }
 
     clickClosestPoint() {
-        // if (closestIndex !== undefined) {
+        // if (closestIndex != null) {
         //     this.app.points[closestIndex].color = this.app.turns[this.app.turn].color;
         //     this.app.points[closestIndex].img = this.app.turns[this.app.turn].img;
         //     this.app.points[closestIndex].turn = this.app.turn;
         // }
-        // return closestIndex !== undefined;
+        // return closestIndex != null;
     }
 
     switchTurn() {

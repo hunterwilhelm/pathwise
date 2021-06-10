@@ -6,7 +6,7 @@ import {Socket} from "socket.io";
 import {UserInfo} from "../shared/models/user.info.model";
 import {SharedCookieConstants} from "../shared/constants/shared.cookie.constants";
 import {App} from "./app";
-import {RoomService} from "./room.service";
+import {Room} from "./room";
 
 export class UserSocketService {
     app: App;
@@ -24,7 +24,7 @@ export class UserSocketService {
             return;
         }
         const roomId = AppUtils.getCookieFromSocket(socket, SharedCookieConstants.ROOM_ID);
-        const room: RoomService | undefined = roomId ? this.app.dataService.getRoomById(roomId) : undefined;
+        const room: Room | undefined = roomId ? this.app.dataService.getRoomById(roomId) : undefined;
         // login
         AppUtils.removeAndDisconnectUsersByIdFromGame(this.app.dataService, userId);
         const user = this.app.dataService.addUser(userId, socket);
@@ -98,14 +98,16 @@ export class UserSocketService {
         socket.on(SharedEmitConstants.GAME_CLICKED_POINT_INDEX.toString(), (pointIndex: number) => {
             const userRoom = this.app.dataService.getRoomByUserId(user.id);
             if (userRoom) {
-                userRoom.onPointIndexClickedEventHandler(user, pointIndex);
+                userRoom.onPointIndexClickedEventHandler(user.id, pointIndex);
             }
         });
     }
 
     private createRoom(user: User): boolean {
         if (this.app.dataService.getRoomInfosByUserId(user.id).length !== 0) return false;
-        this.app.dataService.addRoom(this.app);
+        this.app.dataService
+            .addRoom(this.app)
+            .joinRoom(user);
         return true;
     }
 

@@ -11,6 +11,7 @@
     "npm": "7.16.0"
   },
   "scripts": {
+    "bbs": "npm run build-back && npm run start",
     "start": "node build/bundle.js",
     "build": "npm run build-front && npm run build-back",
     "build-front": "webpack --config webpack-front.config",

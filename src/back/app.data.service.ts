@@ -1,7 +1,7 @@
 import {User} from "./models/user.model";
 import {Socket} from "socket.io";
 import {RoomInfo} from "../shared/models/room.info.model";
-import {RoomService} from "./room.service";
+import {Room} from "./room";
 import {App} from "./app";
 import {SharedGameUtils} from "../shared/shared.game.utils";
 import {SharedGameConstants} from "../shared/constants/shared.game.constants";
@@ -9,7 +9,7 @@ import {Point} from "../shared/models/point.model";
 import {EdgeSet} from "../shared/models/edge-set.model";
 
 export class AppDataService {
-    private rooms: RoomService[];
+    private rooms: Room[];
     private users: User[];
 
     readonly points: readonly Point[];
@@ -49,8 +49,10 @@ export class AppDataService {
         this.getRoomsByUserId(userId).forEach(r => r.leaveRoom(userId))
     }
 
-    addRoom(app: App) {
-        this.rooms.push(new RoomService(app));
+    addRoom(app: App): Room {
+        const room = new Room(app);
+        this.rooms.push(room);
+        return room;
     }
 
     getRoomInfos(): RoomInfo[] {
@@ -58,19 +60,19 @@ export class AppDataService {
     }
 
     getRoomInfosByUserId(userId: string): RoomInfo[] {
-        return this.getRoomsByUserId(userId).map((r: RoomService) => r.getRoomInfo());
+        return this.getRoomsByUserId(userId).map((r: Room) => r.getRoomInfo());
     }
 
-    getRoomsByUserId(userId: string): RoomService[] {
+    getRoomsByUserId(userId: string): Room[] {
         return this.rooms.filter(r => r.users.some(u => u.id === userId));
     }
 
-    getRoomByUserId(userId: string): RoomService | undefined {
+    getRoomByUserId(userId: string): Room | undefined {
         const rooms = this.getRoomsByUserId(userId);
         return rooms.length ? rooms[0] : undefined;
     }
 
-    getRoomById(roomId: string): RoomService | undefined {
+    getRoomById(roomId: string): Room | undefined {
         const foundRooms = this.rooms.filter(r => r.id == roomId);
         if (foundRooms.length) return foundRooms[0];
         return undefined;
