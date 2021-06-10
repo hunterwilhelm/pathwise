@@ -51,6 +51,13 @@ export class App {
         /**
          * Serve the public directory
          */
+        // redirect to https
+        if (!(process.env.NODE_ENV === 'development')) {
+            this.app.enable('trust proxy')
+            this.app.use((req, res, next) => {
+                req.secure ? next() : res.redirect('https://' + req.headers.host + req.url)
+            });
+        }
         this.app.get("/", App.onPageLoadEventHandler);
         this.app.use(express.static(path.join(__dirname, 'front')));
     }
