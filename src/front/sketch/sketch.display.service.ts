@@ -3,6 +3,9 @@ import p5 from "p5";
 import {SketchUtils} from "./sketch.utils";
 
 export class SketchDisplayService {
+    /**
+     * These are the display functions for the sketch
+     */
 
     private app: SketchApp;
     private p: p5;

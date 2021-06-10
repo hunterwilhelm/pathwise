@@ -71,6 +71,9 @@ export class SketchApp {
     }
 
     private registerClientListeners() {
+        /**
+         * Every time the BehaviorSubjects are changed, the subscriptions are called.
+         */
         this.client.getUserInRoomObservable().subscribe((value: boolean) => {
             this.userInRoom = value;
         });
@@ -175,6 +178,9 @@ export class SketchApp {
     }
 
     showErrorMessage(message: string) {
+        /**
+         * For a limited time, sets the error message when the user does something wrong
+         */
         this.errorMessage = message;
         clearTimeout(this.lastTimeout);
         this.lastTimeout = window.setTimeout(() => {this.errorMessage = undefined;}, 3000);
