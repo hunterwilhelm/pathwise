@@ -5,6 +5,9 @@ import {Turn} from "./models/turn.model";
 
 export class SketchUtils {
     static findClosestPointIndex(points: Point[], x: number, y: number): number | undefined {
+        /**
+         * Finds the closest available hexagon to the mouse so the user can see it
+         */
         let closestDistance: number | undefined  = undefined;
         let closestIndex: number | undefined = undefined;
         points.forEach((p, i) => {
@@ -21,6 +24,9 @@ export class SketchUtils {
     }
 
     static getTurns(app: SketchApp, p: p5): Turn[] {
+        /**
+         * Easy programmatic access to the the turn settings
+         */
         return [
             {
                 name: 'Green',

@@ -12,6 +12,9 @@ const PORT = process.env.PORT || 3000;
 const INDEX = './front/index.html';
 
 export class App {
+    /**
+     * Class that setups the back end
+     */
     private readonly app: Express;
     private readonly server: Server;
     readonly io: ServerIO;
@@ -37,15 +40,25 @@ export class App {
     }
 
     private setup() {
+        /**
+         * We need a cookie parser so we can read the
+         * cookies that keep track of the user id and room id after refresh.
+         */
         this.app.use(cookieParser());
     }
 
     private setupRoutes() {
+        /**
+         * Serve the public directory
+         */
         this.app.get("/", App.onPageLoadEventHandler);
         this.app.use(express.static(path.join(__dirname, 'front')));
     }
 
     private registerListeners() {
+        /**
+         * Listen for connection and socket connection
+         */
         this.server.listen(PORT, App.onStartEventHandler);
         this.io.on("connection", (socket: Socket) => {
             this.socketService.onSocketConnectionEventHandler(socket);
@@ -66,6 +79,9 @@ export class App {
 
 
     private static onPageLoadEventHandler(request: Request, res: Response) {
+        /**
+         * Get cookies and send files
+         */
         if (!request.cookies) {
             console.log("parseCookies was not used");
         } else {

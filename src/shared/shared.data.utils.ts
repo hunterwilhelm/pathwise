@@ -2,6 +2,9 @@ import {TurnList} from "./models/turn-list.model";
 import {TurnListCompressed} from "./models/turn-list.compressed.model";
 
 export class SharedDataUtils {
+    /**
+     * Save bandwidth when communicating
+     */
     static encodeTurnList(turnList: TurnList): TurnListCompressed {
         return turnList.map(t => {
             if (t == 0) return 1;

@@ -2,7 +2,13 @@ import {Point} from "./models/point.model";
 import {EdgeSet} from "./models/edge-set.model";
 
 export class SharedGameUtils {
+    /**
+     * These are the game calculations
+     */
     static getPoints(width: number, height: number, tileWidth: number): Point[] {
+        /**
+         * Calculate where the points are on the screen
+         */
         const centerX = width / 2;
         const centerY = height / 2;
         const sideLength = SharedGameUtils.sideLengthOfPolygon(tileWidth / 2, 6);
@@ -30,6 +36,9 @@ export class SharedGameUtils {
     }
 
     static getAdjacencyMatrix(points: readonly Point[], tileWidth: number): number[][] {
+        /**
+         * See what hexagons are connected
+         */
         let matrix: number[][] = [];
         let helperRowOfZeros = Array.from({length: points.length}, () => 0);
         helperRowOfZeros.forEach(() => {
@@ -50,6 +59,9 @@ export class SharedGameUtils {
     }
 
     static getBorderIndexes(points: readonly Point[]): number[] {
+        /**
+         * Find out which ones are a part of the border
+         */
         return points.reduce((filtered: number[], p: Point, i: number) => {
             if (p.border) {
                 filtered.push(i);
@@ -59,6 +71,9 @@ export class SharedGameUtils {
     }
 
     static getEdgeIndexes(): EdgeSet[] {
+        /**
+         * See EdgeSet
+         */
         return [
             {start: [116, 112, 107, 101, 94, 86, 77, 67, 56], end: [64, 53, 43, 34, 26, 19, 13, 8, 4]},
             {start: [116, 113, 109, 104, 98, 91, 83, 74, 64], end: [56, 46, 37, 29, 22, 16, 11, 7, 4]},
@@ -68,6 +83,10 @@ export class SharedGameUtils {
 
 
     static isThereAPath(turn: number, points: Point[], edgeIndexes: readonly EdgeSet[], borderIndexes: readonly number[], matrix: readonly number[][]) {
+        /**
+         * This is the heart of the game
+         * Finds a path from one side to the other using only one color
+         */
         function pathFinder(s: number, visitedIndexes: number[], endEdgeIndexes: number[]) {
             if (endEdgeIndexes.includes(s)) return true;
             const adjacents = matrix[s]

@@ -11,6 +11,9 @@ import {SharedDataUtils} from "../shared/shared.data.utils";
 import {SharedGameUtils} from "../shared/shared.game.utils";
 
 export class Room {
+    /**
+     * This class manages the game logic of the room
+     */
     private readonly ROOM_EXPIRATION_TIME_IN_MILLISECONDS: number = 2 * 1000;
 
     private socketService: RoomSocketService;
@@ -24,8 +27,6 @@ export class Room {
     private turn: number;
     private wonTurn?: number;
     private requestedRematchTurn?: number;
-    // started: boolean;
-    // won: boolean;
 
     points: Point[];
     readonly matrix: readonly number[][];
@@ -49,6 +50,9 @@ export class Room {
     }
 
     private reset() {
+        /**
+         * On rematch, this needs to be called to reset the game
+         */
         this.points.forEach(p=>{
             p.turn = undefined;
         })
@@ -60,6 +64,9 @@ export class Room {
 
 
     get isExpired(): boolean {
+        /**
+         * Avoid spamming
+         */
         if (this.roomEmptySince) {
             const timeElapsed = new Date().getTime() - this.roomEmptySince.getTime();
             return timeElapsed > this.ROOM_EXPIRATION_TIME_IN_MILLISECONDS;
@@ -68,6 +75,9 @@ export class Room {
     }
 
     getRoomInfo(): RoomInfo {
+        /**
+         * For socket communication
+         */
         return {
             id: this.id,
             userIds: this.users.map(u => u.id),
@@ -75,6 +85,9 @@ export class Room {
     }
 
     joinRoom(user: User): boolean {
+        /**
+         * Players should not shift when they leave
+         */
         if (this.player1 == null) {
             this.player1 = user;
         } else if (this.player2 == null) {
@@ -89,6 +102,9 @@ export class Room {
     }
 
     leaveRoom(userId: string) {
+        /**
+         * When a user leaves, many things need to happen
+         */
         if (this.player1?.id === userId) {
             this.player1 = undefined;
         } else if (this.player2?.id === userId) {
@@ -106,6 +122,9 @@ export class Room {
     }
 
     get users(): User[] {
+        /**
+         * Used for counting how many people are in the room and for broadcasting
+         */
         const users = [];
         if (this.player1) {
             users.push(this.player1);
@@ -117,6 +136,9 @@ export class Room {
     }
 
     private getUserById(userId: string): User | undefined {
+        /**
+         * Easy access to the users
+         */
         if (this.player1?.id === userId) {
             return this.player1;
         } else if (this.player2?.id === userId) {
@@ -126,12 +148,18 @@ export class Room {
     }
 
     private getUserByCurrentTurn(turn: number | undefined): User | undefined {
+        /**
+         * Easy access to whose turn is it
+         */
         if (turn === 0) return this.player1;
         if (turn === 1) return this.player2;
         return undefined;
     }
 
     private getTurnByUserId(userId: string): number | undefined {
+        /**
+         * Find out the position of the players
+         */
         if (this.player1?.id === userId) {
             return 0;
         } else if (this.player2?.id === userId) {
@@ -141,14 +169,23 @@ export class Room {
     }
 
     switchTurn() {
+        /**
+         * Called after almost every tile action
+         */
         this.turn = this.turn === 1 ? 0 : 1;
     }
 
     switchStartingTurn() {
+        /**
+         * Alternate whose turn it is first every time to make it more fair
+         */
         this.startingTurn = this.startingTurn === 1 ? 0 : 1;
     }
 
     onPointIndexClickedEventHandler(userId: string, pointIndex: number): void {
+        /**
+         * Validate and execute the tile action
+         */
         const user = this.getUserById(userId);
         if (!user) return;
         if (this.getUserByCurrentTurn(this.turn)?.id != userId) {
@@ -172,6 +209,9 @@ export class Room {
     }
 
     onRematchRequestEventHandler(userId: string) {
+        /**
+         * Do the rematch
+         */
         const turn = this.getTurnByUserId(userId);
         if (turn == null) return;
         if (this.requestedRematchTurn === turn) {
@@ -188,10 +228,16 @@ export class Room {
     }
 
     getTurnList(): TurnList {
+        /**
+         * Easier for compression
+         */
         return this.points.map(u => u.turn);
     }
 
     getGameData(): GameData {
+        /**
+         * Returns all the information about the current game
+         */
         return {
             turn: this.turn,
             turnUserId: this.getUserByCurrentTurn(this.turn)?.id,
