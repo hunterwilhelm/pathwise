@@ -1,5 +1,6 @@
 import express, {Express, Request, Response} from 'express';
 import path from "path";
+import {HTTPS} from "express-sslify"
 import {Server as ServerIO, Socket} from "socket.io";
 import cookieParser from "cookie-parser";
 import {Server} from "http";
@@ -53,10 +54,7 @@ export class App {
          */
         // redirect to https
         if (!(process.env.NODE_ENV === 'development')) {
-            this.app.enable('trust proxy')
-            this.app.use((req, res, next) => {
-                req.secure ? next() : res.redirect('https://' + req.headers.host + req.url)
-            });
+            this.app.use(HTTPS({ trustProtoHeader: true }));
         }
         this.app.get("/", App.onPageLoadEventHandler);
         this.app.use(express.static(path.join(__dirname, 'front')));
