@@ -15,7 +15,7 @@ Hello, my name is Hunter Wilhelm and welcome to my portfolio! I am trying to mas
 * https://pathwise.herokuapp.com/
 
 ### Demo Video
-* [Software Demo Video](https://youtu.be/)
+* [Software Demo Video](https://www.youtube.com/watch?v=ZUebAp04hc8)
 
 ### Game features
 * Many rooms can be made
