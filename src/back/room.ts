@@ -219,7 +219,7 @@ export class Room {
             return;
         }
 
-        if (this.requestedRematchTurn) {
+        if (this.requestedRematchTurn != null) {
             this.reset();
         } else {
             this.requestedRematchTurn = turn;
