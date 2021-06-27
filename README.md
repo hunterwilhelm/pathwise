@@ -39,7 +39,7 @@ Hello, my name is Hunter Wilhelm and welcome to my portfolio! I am trying to mas
 * Mastered Socket.IO
 
 # Development Environment
-I used IntelliJ and Heroku to build this assignment.
+I used IntelliJ and Heroku to build this.
 
 # Helpful Websites
 * [Socket.IO Documentation](https://socket.io/docs/v4/index.html)
